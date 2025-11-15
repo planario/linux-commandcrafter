@@ -24,13 +24,54 @@ interface TaskPreset {
 
 const PRESETS: TaskPreset[] = [
     { name: 'Install a Package', task: { name: 'Ensure nginx is installed', module: 'package', args: { name: 'nginx', state: 'present' }}},
-    { name: 'Manage a Service', task: { name: 'Ensure nginx is running', module: 'service', args: { name: 'nginx', state: 'started' }}},
-    { name: 'Copy a File', task: { name: 'Copy config file', module: 'copy', args: { src: '/local/path/nginx.conf', dest: '/etc/nginx/nginx.conf' }}},
+    { name: 'Manage a Service', task: { name: 'Ensure nginx is running and enabled', module: 'service', args: { name: 'nginx', state: 'started', enabled: 'yes' }}},
+    { name: 'Copy a File', task: { name: 'Copy config file', module: 'copy', args: { src: '/local/path/nginx.conf', dest: '/etc/nginx/nginx.conf', mode: '0644' }}},
     { name: 'Run a Command', task: { name: 'Print uptime', module: 'command', args: { cmd: 'uptime' }}},
     { name: 'Update APT Cache', task: { name: 'Update apt cache', module: 'apt', args: { update_cache: 'yes' }}},
     { name: 'Upgrade APT Packages', task: { name: 'Upgrade all apt packages', module: 'apt', args: { upgrade: 'dist' }}},
-    { name: 'Manage a User', task: { name: 'Ensure user exists', module: 'user', args: { name: 'deploy', state: 'present' }}},
+    { name: 'Manage a User', task: { name: 'Ensure user exists', module: 'user', args: { name: 'deploy', state: 'present', shell: '/bin/bash' }}},
 ];
+
+const MODULE_ARG_DESCRIPTIONS: Record<AnsibleModule, Record<string, string>> = {
+  package: {
+    name: 'Name of the package to install (e.g., nginx, vim).',
+    state: 'Choose whether the package should be `present`, `absent`, or the `latest` version.',
+  },
+  service: {
+    name: 'Name of the service to manage (e.g., nginx, sshd).',
+    state: 'Choose `started`, `stopped`, `restarted`, or `reloaded`.',
+    enabled: '`yes` or `no`. Whether the service should start on boot.',
+  },
+  copy: {
+    src: 'Path to the file on the Ansible controller machine.',
+    dest: 'Path on the remote server where the file will be copied.',
+    mode: 'Permissions for the destination file (e.g., 0644).',
+    owner: 'User that should own the file (e.g., www-data).',
+    group: 'Group that should own the file (e.g., www-data).',
+  },
+  apt: {
+    name: 'Name of the apt package.',
+    state: '`present`, `absent`, or `latest`.',
+    update_cache: 'Set to `yes` to run `apt-get update` before the operation.',
+    upgrade: '`dist` or `yes`. Perform an `apt-get upgrade` or `dist-upgrade`.',
+  },
+  yum: {
+    name: 'Name of the yum package.',
+    state: '`present`, `absent`, or `latest`.',
+    update_cache: 'Set to `yes` to run `yum check-update` before the operation.',
+  },
+  command: {
+    cmd: 'The command to execute on the remote host.',
+    chdir: 'Change into this directory before running the command.',
+    creates: 'A filename. If it exists, this step will not be run.',
+  },
+  user: {
+    name: 'The name of the user to create or manage.',
+    state: '`present` or `absent`. Whether the user should exist.',
+    shell: 'Specify the user\'s shell (e.g., /bin/bash).',
+    groups: 'A comma-separated list of groups to add the user to.',
+  },
+};
 
 
 const TrashIcon = () => (
@@ -63,18 +104,22 @@ const TaskEditor: React.FC<{ task: AnsibleTask, onUpdate: (task: AnsibleTask) =>
                  <span className="px-2 py-0.5 bg-gray-700 text-teal-300 text-xs font-mono rounded">{`ansible.builtin.${task.module}`}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {Object.entries(task.args).map(([key, value]) => (
-                    <div key={key}>
-                         <label className="block text-xs font-medium text-gray-400 mb-1">{key}</label>
-                         <input
-                            type="text"
-                            value={value}
-                            onChange={(e) => handleArgChange(key, e.target.value)}
-                            className="w-full bg-gray-800 border border-gray-600 rounded-md px-2 py-1 focus:ring-teal-500 focus:border-teal-500 text-sm"
-                        />
-                    </div>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                {Object.entries(task.args).map(([key, value]) => {
+                    const description = MODULE_ARG_DESCRIPTIONS[task.module]?.[key];
+                    return (
+                        <div key={key}>
+                             <label className="block text-xs font-medium text-gray-400 mb-1">{key}</label>
+                             <input
+                                type="text"
+                                value={value}
+                                onChange={(e) => handleArgChange(key, e.target.value)}
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md px-2 py-1 focus:ring-teal-500 focus:border-teal-500 text-sm"
+                            />
+                            {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
