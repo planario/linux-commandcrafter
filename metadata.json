@@ -1,0 +1,5 @@
+{
+  "name": "Linux CommandCrafter",
+  "description": "A user-friendly, dark-themed application to visually build complex Linux commands for tasks like file operations (mv, cp, rsync), archiving (tar, gzip), and scheduling cron jobs. Each command has its own organized tab with explained options, making it easy for anyone to craft the exact command they need.",
+  "requestFramePermissions": []
+}
