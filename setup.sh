@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cria o nginx.conf
+# Cria o nginx.conf primeiro
 cat > nginx.conf << 'EOF'
 server {
     listen 80;
@@ -14,6 +14,12 @@ server {
     }
 }
 EOF
+
+# Verifica se package-lock.json existe, se não, gera um novo
+if [ ! -f package-lock.json ]; then
+    echo "package-lock.json não encontrado. Gerando um novo..."
+    npm install --package-lock-only
+fi
 
 # Cria o Dockerfile
 cat > Dockerfile << 'EOF'
