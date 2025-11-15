@@ -107,6 +107,7 @@ export const CronBuilder: React.FC<CronBuilderProps> = ({ onCommandGenerated, fa
                     placeholder="/path/to/your/script.sh"
                     className="w-full bg-gray-900 border border-gray-600 text-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition font-mono"
                 />
+                <p className="text-xs text-gray-500 mt-1">The full command or script to be executed at the scheduled time.</p>
             </div>
             
             <GeneratedCommand 

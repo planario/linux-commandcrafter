@@ -8,8 +8,8 @@ interface FindBuilderProps {
     onToggleFavorite: (command:string, type: string) => void;
 }
 
-const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; }> = 
-({ label, value, onChange, placeholder }) => (
+const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; description?: string; }> = 
+({ label, value, onChange, placeholder, description }) => (
     <div>
         <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
         <input
@@ -19,6 +19,7 @@ const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: str
             placeholder={placeholder}
             className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500 font-mono text-sm"
         />
+        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
     </div>
 );
 
@@ -63,12 +64,12 @@ export const FindBuilder: React.FC<FindBuilderProps> = ({ onCommandGenerated, fa
             </div>
 
             <div className="bg-gray-700/50 p-6 rounded-lg flex flex-col gap-6">
-                <LabeledInput label="Starting Path" value={path} onChange={setPath} placeholder="e.g., /home/user" />
+                <LabeledInput label="Starting Path" value={path} onChange={setPath} placeholder="e.g., /home/user" description="The directory where the search will begin." />
                 
                 <div>
                     <h3 className="text-md font-semibold text-gray-300 mb-4">Expressions</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <LabeledInput label="Name Pattern" value={namePattern} onChange={setNamePattern} placeholder="e.g., *.log or document.txt" />
+                        <LabeledInput label="Name Pattern" value={namePattern} onChange={setNamePattern} placeholder="e.g., *.log or document.txt" description="A shell pattern to match against file names. Use `*` as a wildcard." />
                         
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">File Type</label>

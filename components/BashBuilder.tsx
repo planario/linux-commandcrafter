@@ -33,15 +33,18 @@ const Icons = {
 
 
 // --- UTILITY COMPONENTS ---
-const BlockInput: React.FC<{ value: string; onChange: (val: string) => void; placeholder?: string; mono?: boolean; }> =
-({ value, onChange, placeholder, mono = false }) => (
-    <input
-        type="text"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`w-full bg-gray-800 border border-gray-600 rounded-md px-2 py-1 focus:ring-teal-500 focus:border-teal-500 text-sm ${mono ? 'font-mono' : ''}`}
-    />
+const BlockInput: React.FC<{ value: string; onChange: (val: string) => void; placeholder?: string; mono?: boolean; description?: string; }> =
+({ value, onChange, placeholder, mono = false, description }) => (
+    <div className="flex-1">
+        <input
+            type="text"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`w-full bg-gray-800 border border-gray-600 rounded-md px-2 py-1 focus:ring-teal-500 focus:border-teal-500 text-sm ${mono ? 'font-mono' : ''}`}
+        />
+        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
+    </div>
 );
 
 const BlockControls: React.FC<{ onRemove: () => void; onMove: (dir: 'up' | 'down') => void; isFirst?: boolean; isLast?: boolean; }> =
@@ -79,18 +82,20 @@ const BlockRenderer: React.FC<{
 
     const renderContent = () => {
         switch (block.type) {
-            case 'shebang': return <BlockInput value={block.data.interpreter} onChange={val => onUpdate(path, { interpreter: val })} mono />;
-            case 'comment': return <BlockInput value={block.data.text} onChange={val => onUpdate(path, { text: val })} placeholder="Your comment here" />;
-            case 'variable': return <div className="flex items-center gap-2"><BlockInput value={block.data.name} onChange={val => onUpdate(path, {...block.data, name: val})} placeholder="VAR_NAME" mono /> <span className="text-gray-400">=</span> <BlockInput value={block.data.value} onChange={val => onUpdate(path, {...block.data, value: val})} placeholder='"some value"' mono /></div>;
-            case 'echo': return <BlockInput value={block.data.text} onChange={val => onUpdate(path, { text: val })} placeholder='"Hello, World!"' mono />;
-            case 'read': return <div className="flex items-center gap-2"><BlockInput value={block.data.prompt} onChange={val => onUpdate(path, {...block.data, prompt: val})} placeholder="Enter your name: " mono /> <span className="text-gray-400">Store in &rarr;</span> <BlockInput value={block.data.variable} onChange={val => onUpdate(path, {...block.data, variable: val})} placeholder="NAME" mono /></div>;
-            case 'command': return <BlockInput value={block.data.command} onChange={val => onUpdate(path, { command: val })} placeholder="ls -la" mono />;
+            case 'shebang': return <BlockInput value={block.data.interpreter} onChange={val => onUpdate(path, { ...block.data, interpreter: val })} mono description="The interpreter to execute the script." />;
+            case 'comment': return <BlockInput value={block.data.text} onChange={val => onUpdate(path, { ...block.data, text: val })} placeholder="Your comment here" description="A note that will be ignored by the interpreter." />;
+            case 'variable': return <div className="flex items-start gap-2"><BlockInput value={block.data.name} onChange={val => onUpdate(path, {...block.data, name: val})} placeholder="VAR_NAME" mono description="The variable's name (e.g., `COUNT`)." /> <span className="text-gray-400 pt-1">=</span> <BlockInput value={block.data.value} onChange={val => onUpdate(path, {...block.data, value: val})} placeholder='"some value"' mono description="The value to assign (e.g., `10` or `\"text\"`)." /></div>;
+            // FIX: The error about an unexpected `text` prop was likely due to an issue with how state updates were processed. By spreading `...block.data`, we ensure that the entire data object is preserved correctly during updates, making it consistent with other blocks like `variable` and improving robustness.
+            case 'echo': return <BlockInput value={block.data.text} onChange={val => onUpdate(path, { ...block.data, text: val })} placeholder='"Hello, World!"' mono description="Text or variables to print to the console." />;
+            case 'read': return <div className="flex items-start gap-2"><BlockInput value={block.data.prompt} onChange={val => onUpdate(path, {...block.data, prompt: val})} placeholder="Enter your name: " mono description="The message displayed to the user." /> <span className="text-gray-400 pt-1">Store in &rarr;</span> <BlockInput value={block.data.variable} onChange={val => onUpdate(path, {...block.data, variable: val})} placeholder="NAME" mono description="The variable to store the user's input." /></div>;
+            // FIX: The error about an unexpected `file` prop was likely related to the same state update issue as the `text` prop error. Making this `onUpdate` call consistent with others ensures the entire `data` object is correctly preserved and passed during state updates.
+            case 'command': return <BlockInput value={block.data.command} onChange={val => onUpdate(path, { ...block.data, command: val })} placeholder="ls -la" mono description="Any valid shell command." />;
             case 'if':
             case 'for':
                 return (
                     <div className="flex flex-col gap-4">
-                        {block.type === 'if' && <div className="flex items-center gap-2"><span className="font-mono text-gray-400">if</span><BlockInput value={block.data.condition} onChange={val => onUpdate(path, {...block.data, condition: val})} placeholder='[ "$VAR" == "val" ]' mono /></div>}
-                        {block.type === 'for' && <div className="flex items-center gap-2"><span className="font-mono text-gray-400">for</span><BlockInput value={block.data.variable} onChange={val => onUpdate(path, {...block.data, variable: val})} placeholder="item" mono /><span className="font-mono text-gray-400">in</span><BlockInput value={block.data.list} onChange={val => onUpdate(path, {...block.data, list: val})} placeholder="a b c" mono /></div>}
+                        {block.type === 'if' && <div className="flex items-start gap-2"><span className="font-mono text-gray-400 pt-1">if</span><BlockInput value={block.data.condition} onChange={val => onUpdate(path, {...block.data, condition: val})} placeholder='[ "$VAR" == "val" ]' mono description="A condition to test (e.g., `[ -f \"file.txt\" ]`)." /></div>}
+                        {block.type === 'for' && <div className="flex items-start gap-2"><span className="font-mono text-gray-400 pt-1">for</span><BlockInput value={block.data.variable} onChange={val => onUpdate(path, {...block.data, variable: val})} placeholder="item" mono description="Loop variable name (e.g., `i`)." /><span className="font-mono text-gray-400 pt-1">in</span><BlockInput value={block.data.list} onChange={val => onUpdate(path, {...block.data, list: val})} placeholder="a b c" mono description="A space-separated list of items to iterate over." /></div>}
                         
                         {/* THEN / DO block */}
                         <div className="ml-4 border-l-2 border-gray-700 pl-4 py-2 flex flex-col gap-3">

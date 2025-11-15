@@ -138,14 +138,17 @@ export const UfwBuilder: React.FC<UfwBuilderProps> = ({ onCommandGenerated, favo
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">Port / Service</label>
                             <input value={port} onChange={e => setPort(e.target.value)} placeholder="e.g., 22 or http" className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
+                            <p className="text-xs text-gray-500 mt-1">Specify a port number or a service name from /etc/services.</p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">From IP (optional)</label>
                             <input value={fromIp} onChange={e => setFromIp(e.target.value)} placeholder="any or 192.168.1.100" className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
+                            <p className="text-xs text-gray-500 mt-1">Source address for the rule (e.g., a specific IP or subnet).</p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">To IP (optional)</label>
                             <input value={toIp} onChange={e => setToIp(e.target.value)} placeholder="any" className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
+                            <p className="text-xs text-gray-500 mt-1">Destination address for the rule (usually 'any').</p>
                         </div>
                     </div>
                 </div>

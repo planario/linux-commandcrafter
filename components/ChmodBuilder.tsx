@@ -70,6 +70,7 @@ export const ChmodBuilder: React.FC<ChmodBuilderProps> = ({ onCommandGenerated, 
                 <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">File or Directory Path</label>
                     <input value={path} onChange={e => setPath(e.target.value)} placeholder="/path/to/target" className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
+                    <p className="text-xs text-gray-500 mt-1">The file or directory whose permissions will be changed.</p>
                 </div>
                 <div className="flex items-start gap-3">
                     <input type="checkbox" id="chmod-recursive" checked={isRecursive} onChange={e => setIsRecursive(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mt-1" />
@@ -93,7 +94,7 @@ export const ChmodBuilder: React.FC<ChmodBuilderProps> = ({ onCommandGenerated, 
                     <div>
                         <label className="block text-sm font-medium text-gray-400 mb-2">Octal Value</label>
                         <input value={octalValue} onChange={e => setOctalValue(e.target.value)} maxLength={3} placeholder="e.g., 755" className="w-full md:w-1/3 bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500 font-mono" />
-                        <p className="text-xs text-gray-500 mt-2">Common values: 755 for directories, 644 for files.</p>
+                        <p className="text-xs text-gray-500 mt-2">A 3-digit octal number (e.g., 755). Each digit represents user, group, and others.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

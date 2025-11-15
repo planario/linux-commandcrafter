@@ -11,8 +11,8 @@ interface FfmpegBuilderProps {
 type Mode = 'convert' | 'extractAudio' | 'createGif' | 'trim' | 'upscale';
 type HwAccel = 'none' | 'cuda' | 'qsv' | 'vaapi' | 'videotoolbox';
 
-const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; type?: string; }> = 
-({ label, value, onChange, placeholder, type = 'text' }) => (
+const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; type?: string; description?: string; }> = 
+({ label, value, onChange, placeholder, type = 'text', description }) => (
     <div>
         <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
         <input
@@ -22,6 +22,7 @@ const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: str
             placeholder={placeholder}
             className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
         />
+        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
     </div>
 );
 
@@ -111,26 +112,26 @@ export const FfmpegBuilder: React.FC<FfmpegBuilderProps> = ({ onCommandGenerated
             case 'convert':
                 return (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <LabeledInput label="Video Codec" value={videoCodec} onChange={setVideoCodec} placeholder="e.g., libx264, copy" />
-                        <LabeledInput label="Audio Codec" value={audioCodec} onChange={setAudioCodec} placeholder="e.g., aac, copy" />
+                        <LabeledInput label="Video Codec" value={videoCodec} onChange={setVideoCodec} placeholder="e.g., libx264, copy" description="`copy` to re-use the existing stream, or an encoder like `libx264`." />
+                        <LabeledInput label="Audio Codec" value={audioCodec} onChange={setAudioCodec} placeholder="e.g., aac, copy" description="`copy` to re-use the existing stream, or an encoder like `aac`." />
                     </div>
                 );
             case 'extractAudio':
-                 return <LabeledInput label="Audio Codec" value={audioCodec} onChange={setAudioCodec} placeholder="e.g., aac, mp3, copy" />;
+                 return <LabeledInput label="Audio Codec" value={audioCodec} onChange={setAudioCodec} placeholder="e.g., aac, mp3, copy" description="The audio format for the extracted file. `copy` is fastest." />;
             case 'createGif':
                 return (
                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <LabeledInput label="Start Time" value={startTime} onChange={setStartTime} placeholder="HH:MM:SS" />
-                        <LabeledInput label="Duration (s)" value={duration} onChange={setDuration} placeholder="e.g., 5" />
-                        <LabeledInput label="FPS" value={fps} onChange={setFps} placeholder="e.g., 15" />
-                        <LabeledInput label="Width (px)" value={width} onChange={setWidth} placeholder="e.g., 480" />
+                        <LabeledInput label="Start Time" value={startTime} onChange={setStartTime} placeholder="HH:MM:SS" description="Timestamp to start the GIF from." />
+                        <LabeledInput label="Duration (s)" value={duration} onChange={setDuration} placeholder="e.g., 5" description="Length of the GIF in seconds." />
+                        <LabeledInput label="FPS" value={fps} onChange={setFps} placeholder="e.g., 15" description="Frames per second for the GIF." />
+                        <LabeledInput label="Width (px)" value={width} onChange={setWidth} placeholder="e.g., 480" description="Width of the GIF. Height is auto-scaled." />
                     </div>
                 );
             case 'trim':
                  return (
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <LabeledInput label="Start Time" value={startTime} onChange={setStartTime} placeholder="HH:MM:SS" />
-                        <LabeledInput label="Duration (s)" value={duration} onChange={setDuration} placeholder="e.g., 30" />
+                        <LabeledInput label="Start Time" value={startTime} onChange={setStartTime} placeholder="HH:MM:SS" description="Timestamp to start trimming from." />
+                        <LabeledInput label="Duration (s)" value={duration} onChange={setDuration} placeholder="e.g., 30" description="How many seconds to include in the output." />
                     </div>
                  );
             case 'upscale':
@@ -141,7 +142,7 @@ export const FfmpegBuilder: React.FC<FfmpegBuilderProps> = ({ onCommandGenerated
                                 <strong>NVIDIA GPU Required:</strong> CUDA acceleration requires a compatible NVIDIA graphics card and correctly installed drivers. The video encoder has been set to `h264_nvenc`.
                             </WarningMessage>
                         )}
-                        <LabeledInput label="Target Resolution" value={scale} onChange={setScale} placeholder="e.g., 3840:2160 or 1920:-1" />
+                        <LabeledInput label="Target Resolution" value={scale} onChange={setScale} placeholder="e.g., 3840:2160 or 1920:-1" description="`width:height`. Use -1 to auto-scale one dimension while maintaining aspect ratio." />
                     </>
                 );
             default: return null;
@@ -171,8 +172,8 @@ export const FfmpegBuilder: React.FC<FfmpegBuilderProps> = ({ onCommandGenerated
                 </div>
                 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <LabeledInput label="Input File" value={inputFile} onChange={setInputFile} />
-                    <LabeledInput label="Output File" value={outputFile} onChange={setOutputFile} />
+                    <LabeledInput label="Input File" value={inputFile} onChange={setInputFile} description="The source video or audio file." />
+                    <LabeledInput label="Output File" value={outputFile} onChange={setOutputFile} description="The destination file. The extension determines the format." />
                 </div>
 
                 {(mode === 'convert' || mode === 'upscale') && (
@@ -185,6 +186,7 @@ export const FfmpegBuilder: React.FC<FfmpegBuilderProps> = ({ onCommandGenerated
                             <option value="vaapi">VA-API (Linux)</option>
                             <option value="videotoolbox">Apple VideoToolbox (macOS)</option>
                         </select>
+                         <p className="text-xs text-gray-500 mt-1">Choose a hardware accelerator for faster encoding if available on your system.</p>
                     </div>
                 )}
 

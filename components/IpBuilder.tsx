@@ -13,8 +13,8 @@ type AddrSub = 'show' | 'add' | 'del';
 type LinkSub = 'show' | 'set';
 type RouteSub = 'show' | 'add' | 'del';
 
-const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; }> = 
-({ label, value, onChange, placeholder }) => (
+const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; description?: string; }> = 
+({ label, value, onChange, placeholder, description }) => (
     <div>
         <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
         <input
@@ -24,6 +24,7 @@ const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: str
             placeholder={placeholder}
             className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
         />
+        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
     </div>
 );
 
@@ -100,9 +101,9 @@ export const IpBuilder: React.FC<IpBuilderProps> = ({ onCommandGenerated, favori
                             <option value="del">del</option>
                         </select>
                         {(subcommand === 'add' || subcommand === 'del') && 
-                            <LabeledInput label="Address (CIDR format)" value={address} onChange={setAddress} placeholder="e.g., 192.168.1.100/24" />
+                            <LabeledInput label="Address (CIDR format)" value={address} onChange={setAddress} placeholder="e.g., 192.168.1.100/24" description="The IP address and subnet mask, e.g., `192.168.1.100/24`." />
                         }
-                        <LabeledInput label="Device (optional for show)" value={device} onChange={setDevice} placeholder="e.g., eth0" />
+                        <LabeledInput label="Device (optional for show)" value={device} onChange={setDevice} placeholder="e.g., eth0" description="The target network interface, e.g., `eth0`." />
                     </>
                 );
             case 'link':
@@ -112,7 +113,7 @@ export const IpBuilder: React.FC<IpBuilderProps> = ({ onCommandGenerated, favori
                             <option value="show">show</option>
                             <option value="set">set</option>
                         </select>
-                        <LabeledInput label="Device" value={device} onChange={setDevice} placeholder="e.g., eth0" />
+                        <LabeledInput label="Device" value={device} onChange={setDevice} placeholder="e.g., eth0" description="The target network interface, e.g., `eth0`." />
                         {subcommand === 'set' && (
                             <select value={linkState} onChange={e => setLinkState(e.target.value)} className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
                                 <option value="up">up</option>
@@ -130,13 +131,13 @@ export const IpBuilder: React.FC<IpBuilderProps> = ({ onCommandGenerated, favori
                             <option value="del">del</option>
                         </select>
                         {(subcommand === 'add' || subcommand === 'del') && 
-                            <LabeledInput label="Destination" value={routeDest} onChange={setRouteDest} placeholder="e.g., default or 10.0.0.0/8" />
+                            <LabeledInput label="Destination" value={routeDest} onChange={setRouteDest} placeholder="e.g., default or 10.0.0.0/8" description="The destination network or host. Use `default` for the default route." />
                         }
                         {subcommand === 'add' &&
-                            <LabeledInput label="Gateway" value={gateway} onChange={setGateway} placeholder="e.g., 192.168.1.1" />
+                            <LabeledInput label="Gateway" value={gateway} onChange={setGateway} placeholder="e.g., 192.168.1.1" description="The IP address of the gateway router." />
                         }
                         {subcommand === 'add' &&
-                             <LabeledInput label="Device (optional)" value={device} onChange={setDevice} placeholder="e.g., eth0" />
+                             <LabeledInput label="Device (optional)" value={device} onChange={setDevice} placeholder="e.g., eth0" description="The target network interface, e.g., `eth0`." />
                         }
                     </>
                 );

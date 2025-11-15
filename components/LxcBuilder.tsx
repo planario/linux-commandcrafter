@@ -94,12 +94,14 @@ export const LxcBuilder: React.FC<LxcBuilderProps> = ({ onCommandGenerated, favo
                         value={image}
                         onChange={setImage}
                         placeholder="e.g., ubuntu:22.04"
+                        description="The name of the image to use, e.g., `ubuntu:22.04` or `images:alpine/3.16`."
                     />
                      <LabeledInput 
                         label="Container Name"
                         value={containerName}
                         onChange={setContainerName}
                         placeholder="e.g., web-server"
+                        description="A unique name for your new container."
                     />
                 </div>
             </div>

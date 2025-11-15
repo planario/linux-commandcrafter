@@ -1,8 +1,42 @@
 # Linux CommandCrafter Deployment Guide
 
-This guide provides step-by-step instructions for deploying the Linux CommandCrafter application on a Debian or Ubuntu server. We will use Nginx to serve the application, which is a high-performance web server ideal for static sites.
+This guide provides step-by-step instructions for deploying the Linux CommandCrafter application.
 
-## Pre-requisites
+---
+
+## Automated Deployment (Recommended)
+
+An automated deployment script is provided to handle all the setup steps for you on a fresh Debian or Ubuntu server.
+
+1.  **Download the Deployment Script:**
+    First, get the `deploy.sh` script onto your server.
+    ```bash
+    # You may need to install git first: sudo apt update && sudo apt install git
+    # Replace the URL with the actual repository URL if you have a fork.
+    git clone https://github.com/example/commandcrafter.git
+    cd commandcrafter
+    ```
+    
+2.  **Make the Script Executable:**
+    ```bash
+    chmod +x deploy.sh
+    ```
+
+3.  **Run the Script as Root:**
+    The script will install packages and configure system services, so it needs root privileges.
+    ```bash
+    sudo ./deploy.sh
+    ```
+
+The script will prompt you for your server's domain name or IP address and handle the rest. Once it finishes, your application will be live and ready to use.
+
+---
+
+## Manual Deployment
+
+If you prefer to set up the server manually, follow the steps below.
+
+### Pre-requisites
 
 Before you begin, ensure you have the following:
 
@@ -10,10 +44,6 @@ Before you begin, ensure you have the following:
 2.  **Sudo Access**: You will need root privileges to install packages and configure the server.
 3.  **Server Access**: You should be able to connect to your server via SSH.
 4.  **A Domain Name (Optional)**: If you want to access your app via a domain name (e.g., `commands.yourdomain.com`), make sure you have one and can configure its DNS records. If not, you can use your server's IP address.
-
----
-
-## Deployment Steps
 
 ### Step 1: Connect to Your Server
 

@@ -10,8 +10,8 @@ interface GitBuilderProps {
 
 type Subcommand = 'clone' | 'add' | 'commit' | 'push' | 'pull' | 'branch' | 'checkout';
 
-const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; }> = 
-({ label, value, onChange, placeholder }) => (
+const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; description?: string; }> = 
+({ label, value, onChange, placeholder, description }) => (
     <div>
         <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
         <input
@@ -21,6 +21,7 @@ const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: str
             placeholder={placeholder}
             className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
         />
+        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
     </div>
 );
 
@@ -110,16 +111,16 @@ export const GitBuilder: React.FC<GitBuilderProps> = ({ onCommandGenerated, favo
             case 'clone':
                 return (
                     <div className="grid md:grid-cols-2 gap-4">
-                        <LabeledInput label="Repository URL" value={cloneRepo} onChange={setCloneRepo} />
-                        <LabeledInput label="Directory (Optional)" value={cloneDir} onChange={setCloneDir} placeholder="my-app" />
+                        <LabeledInput label="Repository URL" value={cloneRepo} onChange={setCloneRepo} description="The full URL of the repository to clone." />
+                        <LabeledInput label="Directory (Optional)" value={cloneDir} onChange={setCloneDir} placeholder="my-app" description="The name of the local directory to clone into." />
                     </div>
                 );
             case 'add':
-                return <LabeledInput label="File / Pathspec" value={addPath} onChange={setAddPath} placeholder="e.g., . or src/" />;
+                return <LabeledInput label="File / Pathspec" value={addPath} onChange={setAddPath} placeholder="e.g., . or src/" description="Which files to stage. Use `.` for all changes." />;
             case 'commit':
                 return (
                     <div className="flex flex-col gap-4">
-                        <LabeledInput label="Commit Message" value={commitMsg} onChange={setCommitMsg} placeholder="A brief summary of changes" />
+                        <LabeledInput label="Commit Message" value={commitMsg} onChange={setCommitMsg} placeholder="A brief summary of changes" description="A short, descriptive summary of the changes made." />
                          <div className="flex items-center gap-3">
                             <input type="checkbox" id="amend" checked={commitAmend} onChange={e => setCommitAmend(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
                             <label htmlFor="amend" className="text-sm text-gray-300">Amend previous commit</label>
@@ -130,8 +131,8 @@ export const GitBuilder: React.FC<GitBuilderProps> = ({ onCommandGenerated, favo
                 return (
                     <div className="flex flex-col gap-4">
                         <div className="grid md:grid-cols-2 gap-4">
-                            <LabeledInput label="Remote" value={pushRemote} onChange={setPushRemote} />
-                            <LabeledInput label="Branch" value={pushBranch} onChange={setPushBranch} />
+                            <LabeledInput label="Remote" value={pushRemote} onChange={setPushRemote} description="The name of the remote repository (usually 'origin')." />
+                            <LabeledInput label="Branch" value={pushBranch} onChange={setPushBranch} description="The name of the branch to push to." />
                         </div>
                         <div className="flex items-center gap-3">
                             <input type="checkbox" id="force" checked={pushForce} onChange={e => setPushForce(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
@@ -142,16 +143,16 @@ export const GitBuilder: React.FC<GitBuilderProps> = ({ onCommandGenerated, favo
             case 'pull':
                 return (
                      <div className="grid md:grid-cols-2 gap-4">
-                        <LabeledInput label="Remote" value={pullRemote} onChange={setPullRemote} />
-                        <LabeledInput label="Branch" value={pullBranch} onChange={setPullBranch} />
+                        <LabeledInput label="Remote" value={pullRemote} onChange={setPullRemote} description="The name of the remote repository (usually 'origin')." />
+                        <LabeledInput label="Branch" value={pullBranch} onChange={setPullBranch} description="The name of the branch to pull from." />
                     </div>
                 );
              case 'branch':
-                return <LabeledInput label="Branch Name (leave blank to list)" value={branchName} onChange={setBranchName} placeholder="new-feature" />;
+                return <LabeledInput label="Branch Name (leave blank to list)" value={branchName} onChange={setBranchName} placeholder="new-feature" description="The name of the new branch. Leave blank to list all branches." />;
              case 'checkout':
                  return (
                     <div className="flex flex-col gap-4">
-                        <LabeledInput label="Branch Name" value={checkoutName} onChange={setCheckoutName} />
+                        <LabeledInput label="Branch Name" value={checkoutName} onChange={setCheckoutName} description="The branch or commit to switch to." />
                          <div className="flex items-center gap-3">
                             <input type="checkbox" id="new-branch" checked={checkoutNew} onChange={e => setCheckoutNew(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
                             <label htmlFor="new-branch" className="text-sm text-gray-300">Create a new branch (-b)</label>
@@ -191,6 +192,7 @@ export const GitBuilder: React.FC<GitBuilderProps> = ({ onCommandGenerated, favo
                         value={apiKey} 
                         onChange={setApiKey} 
                         placeholder="e.g., ghp_..."
+                        description="For private HTTPS repos, provide a Personal Access Token."
                     />
                 )}
 
