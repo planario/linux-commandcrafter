@@ -38,6 +38,7 @@ export interface Alias {
   name: string;
   command: string;
   description: string;
+  runInSubshell?: boolean;
 }
 
 export interface TutorialContent {

@@ -14,15 +14,18 @@ import { GrepBuilder } from './components/GrepBuilder';
 import { FindBuilder } from './components/FindBuilder';
 import { ChmodBuilder } from './components/ChmodBuilder';
 import { BashBuilder } from './components/BashBuilder';
+import { ScpBuilder } from './components/ScpBuilder';
+import { RsyncBuilder } from './components/RsyncBuilder';
 import { TabButton } from './components/TabButton';
 import { Aliases } from './components/Aliases';
 import { Tutorials } from './components/Tutorials';
 import { History } from './components/History';
 import { Favorites } from './components/Favorites';
+import { CommandAnalyzer } from './components/CommandAnalyzer';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Alias, CommandEntry } from './types';
 
-type MainView = 'builders' | 'aliases' | 'tutorials' | 'history' | 'favorites';
+type MainView = 'builders' | 'analyze' | 'aliases' | 'tutorials' | 'history' | 'favorites';
 
 const BuildersView: React.FC<{
   onCommandGenerated: (command: string, type: string) => void;
@@ -32,7 +35,7 @@ const BuildersView: React.FC<{
   const [activeBuilderTab, setActiveBuilderTab] = useState<string>('mv');
   
   const commandTabs = COMMANDS.map(cmd => cmd.name);
-  const allBuilderTabs = [...commandTabs, 'ufw', 'crontab', 'ffmpeg', 'ansible-playbook', 'git', 'sed', 'lxc', 'ip', 'grep', 'find', 'chmod', 'bash'].sort();
+  const allBuilderTabs = [...commandTabs, 'ufw', 'crontab', 'ffmpeg', 'ansible-playbook', 'git', 'sed', 'lxc', 'ip', 'grep', 'find', 'chmod', 'bash', 'scp', 'rsync'].sort();
   const activeCommand = COMMANDS.find(cmd => cmd.name === activeBuilderTab);
 
   const renderContent = () => {
@@ -120,6 +123,20 @@ const BuildersView: React.FC<{
             onToggleFavorite={onToggleFavorite}
         />;
     }
+    if (activeBuilderTab === 'scp') {
+        return <ScpBuilder 
+            onCommandGenerated={onCommandGenerated}
+            favorites={favorites}
+            onToggleFavorite={onToggleFavorite}
+        />;
+    }
+    if (activeBuilderTab === 'rsync') {
+        return <RsyncBuilder 
+            onCommandGenerated={onCommandGenerated}
+            favorites={favorites}
+            onToggleFavorite={onToggleFavorite}
+        />;
+    }
     if (activeCommand) {
       return <CommandBuilder 
         command={activeCommand} 
@@ -202,6 +219,7 @@ const App: React.FC = () => {
   
   const mainViews: { id: MainView; label: string }[] = [
       { id: 'builders', label: 'Builders' },
+      { id: 'analyze', label: 'Analyze' },
       { id: 'aliases', label: 'Aliases' },
       { id: 'tutorials', label: 'Tutorials' },
       { id: 'history', label: 'History' },
@@ -244,6 +262,7 @@ const App: React.FC = () => {
                   onToggleFavorite={toggleFavorite}
                 />
             )}
+            {activeView === 'analyze' && <CommandAnalyzer />}
             {activeView === 'aliases' && <Aliases aliases={aliases} setAliases={setAliases} />}
             {activeView === 'tutorials' && <Tutorials tutorials={TUTORIALS} />}
             {activeView === 'history' && (

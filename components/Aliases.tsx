@@ -24,12 +24,14 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
     const [name, setName] = useState('');
     const [command, setCommand] = useState('');
     const [description, setDescription] = useState('');
+    const [runInSubshell, setRunInSubshell] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
     const resetForm = () => {
         setName('');
         setCommand('');
         setDescription('');
+        setRunInSubshell(false);
         setEditingId(null);
     };
 
@@ -38,9 +40,9 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
         if (!name || !command) return;
 
         if (editingId) {
-            setAliases(aliases.map(a => a.id === editingId ? { ...a, name, command, description } : a));
+            setAliases(aliases.map(a => a.id === editingId ? { ...a, name, command, description, runInSubshell } : a));
         } else {
-            const newAlias: Alias = { id: crypto.randomUUID(), name, command, description };
+            const newAlias: Alias = { id: crypto.randomUUID(), name, command, description, runInSubshell };
             setAliases([newAlias, ...aliases]);
         }
         resetForm();
@@ -51,6 +53,7 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
         setName(alias.name);
         setCommand(alias.command);
         setDescription(alias.description);
+        setRunInSubshell(!!alias.runInSubshell);
     };
 
     const handleDelete = (id: string) => {
@@ -62,6 +65,11 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
         }
     };
 
+    const formatAliasLine = (alias: Alias) => {
+        const cmd = alias.runInSubshell ? `(${alias.command})` : alias.command;
+        return `alias ${alias.name}='${cmd}'`;
+    };
+
     return (
         <div className="p-6 sm:p-8 flex flex-col gap-8">
             <div>
@@ -71,9 +79,50 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
             
             <form onSubmit={handleSubmit} className="bg-gray-700/50 p-6 rounded-lg flex flex-col gap-4">
                 <h3 className="text-lg font-semibold text-gray-200">{editingId ? 'Edit Alias' : 'Add New Alias'}</h3>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Alias Name (e.g., 'backup_home')" required className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
-                <textarea value={command} onChange={e => setCommand(e.target.value)} placeholder="Full command (e.g., 'rsync -avz /home/user/ remote:/backup/')" required rows={3} className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 font-mono focus:ring-teal-500 focus:border-teal-500"/>
-                <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Description (optional)" className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input 
+                        type="text" 
+                        value={name} 
+                        onChange={e => setName(e.target.value)} 
+                        placeholder="Alias Name (e.g., 'back')" 
+                        required 
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
+                    />
+                    <input 
+                        type="text" 
+                        value={description} 
+                        onChange={e => setDescription(e.target.value)} 
+                        placeholder="Short description (optional)" 
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
+                    />
+                </div>
+
+                <textarea 
+                    value={command} 
+                    onChange={e => setCommand(e.target.value)} 
+                    placeholder="Full command (e.g., 'cd /var/www && ls -la')" 
+                    required 
+                    rows={3} 
+                    className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 font-mono focus:ring-teal-500 focus:border-teal-500"
+                />
+
+                <div className="flex items-center gap-3 bg-gray-900/40 p-3 rounded-md border border-gray-600/30">
+                    <input 
+                        type="checkbox" 
+                        id="runInSubshell" 
+                        checked={runInSubshell} 
+                        onChange={e => setRunInSubshell(e.target.checked)} 
+                        className="h-4 w-4 rounded border-gray-400 text-teal-600 focus:ring-teal-500"
+                    />
+                    <div>
+                        <label htmlFor="runInSubshell" className="text-sm font-medium text-gray-200 cursor-pointer">
+                            Run in subshell
+                        </label>
+                        <p className="text-xs text-gray-500">Wraps command in <span className="font-mono">()</span>. Useful to prevent <span className="font-mono">cd</span> or exports from affecting your current terminal session.</p>
+                    </div>
+                </div>
+
                 <div className="flex gap-4">
                     <button type="submit" className="px-4 py-2 bg-teal-600 hover:bg-teal-500 rounded-md text-white font-semibold transition-colors">{editingId ? 'Update Alias' : 'Save Alias'}</button>
                     {editingId && <button type="button" onClick={resetForm} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md text-white font-semibold transition-colors">Cancel</button>}
@@ -84,18 +133,26 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
                 {aliases.length === 0 ? (
                      <p className="text-center text-gray-500 py-8">You haven't saved any aliases yet.</p>
                 ) : aliases.map(alias => (
-                    <div key={alias.id} className="bg-gray-900/50 p-4 rounded-lg">
+                    <div key={alias.id} className="bg-gray-900/50 p-4 rounded-lg border border-gray-700 hover:border-teal-500/30 transition-colors">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h4 className="font-bold text-teal-400">{alias.name}</h4>
+                                <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-teal-400">{alias.name}</h4>
+                                    {alias.runInSubshell && <span className="text-[10px] bg-teal-900/80 text-teal-300 px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">Subshell</span>}
+                                </div>
                                 {alias.description && <p className="text-sm text-gray-400 mt-1">{alias.description}</p>}
                             </div>
                             <div className="flex gap-2 flex-shrink-0 ml-4">
-                                <button onClick={() => handleEdit(alias)} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors"><EditIcon /></button>
-                                <button onClick={() => handleDelete(alias.id)} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors"><TrashIcon /></button>
+                                <button onClick={() => handleEdit(alias)} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors" title="Edit Alias"><EditIcon /></button>
+                                <button onClick={() => handleDelete(alias.id)} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors" title="Delete Alias"><TrashIcon /></button>
                             </div>
                         </div>
-                        <code className="block bg-gray-800 p-3 rounded-md mt-3 text-teal-300 text-sm break-all select-all font-mono">{alias.command}</code>
+                        <div className="mt-4">
+                            <span className="text-xs font-semibold text-gray-500 mb-1 block">Shell definition:</span>
+                            <code className="block bg-gray-800 p-3 rounded-md text-teal-300 text-sm break-all select-all font-mono">
+                                {formatAliasLine(alias)}
+                            </code>
+                        </div>
                     </div>
                 ))}
             </div>
