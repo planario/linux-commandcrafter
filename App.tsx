@@ -16,6 +16,7 @@ import { ChmodBuilder } from './components/ChmodBuilder';
 import { BashBuilder } from './components/BashBuilder';
 import { ScpBuilder } from './components/ScpBuilder';
 import { RsyncBuilder } from './components/RsyncBuilder';
+import { SshBuilder } from './components/SshBuilder';
 import { TabButton } from './components/TabButton';
 import { Aliases } from './components/Aliases';
 import { Tutorials } from './components/Tutorials';
@@ -25,7 +26,7 @@ import { CommandAnalyzer } from './components/CommandAnalyzer';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Alias, CommandEntry } from './types';
 
-type MainView = 'builders' | 'analyze' | 'aliases' | 'tutorials' | 'history' | 'favorites';
+type MainView = 'builders' | 'analyze' | 'aliases' | 'tutorials' | 'history' | 'favorites' | 'ssh';
 
 const BuildersView: React.FC<{
   onCommandGenerated: (command: string, type: string) => void;
@@ -220,6 +221,7 @@ const App: React.FC = () => {
   const mainViews: { id: MainView; label: string }[] = [
       { id: 'builders', label: 'Builders' },
       { id: 'analyze', label: 'Analyze' },
+      { id: 'ssh', label: 'SSH' },
       { id: 'aliases', label: 'Aliases' },
       { id: 'tutorials', label: 'Tutorials' },
       { id: 'history', label: 'History' },
@@ -263,6 +265,13 @@ const App: React.FC = () => {
                 />
             )}
             {activeView === 'analyze' && <CommandAnalyzer />}
+            {activeView === 'ssh' && (
+                <SshBuilder 
+                    onCommandGenerated={addCommandToHistory}
+                    favorites={favorites}
+                    onToggleFavorite={toggleFavorite}
+                />
+            )}
             {activeView === 'aliases' && <Aliases aliases={aliases} setAliases={setAliases} />}
             {activeView === 'tutorials' && <Tutorials tutorials={TUTORIALS} />}
             {activeView === 'history' && (
