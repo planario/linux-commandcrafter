@@ -11,6 +11,8 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+PORT=7256
+
 echo -e "${BLUE}==============================================${NC}"
 echo -e "${BLUE}   Linux CommandCrafter Deployment Engine     ${NC}"
 echo -e "${BLUE}==============================================${NC}"
@@ -65,7 +67,7 @@ npm install
 npm run build
 
 # Configure Nginx
-echo -e "${GREEN}[4/5] Configuring Nginx...${NC}"
+echo -e "${GREEN}[4/5] Configuring Nginx on port ${PORT}...${NC}"
 mkdir -p /var/www/commandcrafter
 cp -r dist/* /var/www/commandcrafter/
 chown -R $WEB_USER:$WEB_USER /var/www/commandcrafter
@@ -73,7 +75,7 @@ chown -R $WEB_USER:$WEB_USER /var/www/commandcrafter
 # Create Nginx Config
 NGINX_CONFIG="
 server {
-    listen 80;
+    listen ${PORT};
     server_name _;
 
     root /var/www/commandcrafter;
@@ -103,13 +105,13 @@ systemctl restart nginx
 
 # Firewall Setup
 if command -v ufw &> /dev/null; then
-    ufw allow 'Nginx Full'
+    ufw allow ${PORT}/tcp
 elif command -v firewall-cmd &> /dev/null; then
-    firewall-cmd --permanent --add-service=http
+    firewall-cmd --permanent --add-port=${PORT}/tcp
     firewall-cmd --reload
 fi
 
 echo -e "${BLUE}==============================================${NC}"
 echo -e "${GREEN}SUCCESS: CommandCrafter is live!${NC}"
-echo -e "Access it at: http://$(curl -s ifconfig.me)"
+echo -e "Access it at: http://$(curl -s ifconfig.me):${PORT}"
 echo -e "${BLUE}==============================================${NC}"

@@ -13,12 +13,12 @@ The fastest way to get CommandCrafter running on any platform with Docker instal
 # Build and start
 docker-compose up -d
 ```
-Access the app at `http://localhost:8080`.
+Access the app at `http://localhost:7256`.
 
 ---
 
 ### 2. Automated Linux Script
-Deploy to a fresh server in seconds. This script handles OS detection, Node.js installation, Nginx configuration, and security headers.
+Deploy to a fresh server in seconds. This script handles OS detection, Node.js installation, Nginx configuration on port 7256, and security headers.
 
 **Supports:** Ubuntu, Debian, RHEL, CentOS, Fedora.
 
@@ -76,7 +76,7 @@ Create `/etc/nginx/sites-available/commandcrafter` (Debian) or `/etc/nginx/conf.
 
 ```nginx
 server {
-    listen 80;
+    listen 7256;
     root /var/www/commandcrafter;
     index index.html;
     location / {
@@ -90,9 +90,9 @@ server {
 ## 🛡️ Security & Hardening
 
 ### Firewall
-Ensure port 80 is open:
-- **UFW:** `sudo ufw allow 'Nginx Full'`
-- **Firewalld:** `sudo firewall-cmd --permanent --add-service=http && sudo firewall-cmd --reload`
+Ensure port 7256 is open:
+- **UFW:** `sudo ufw allow 7256/tcp`
+- **Firewalld:** `sudo firewall-cmd --permanent --add-port=7256/tcp && sudo firewall-cmd --reload`
 
 ### SELinux (RHEL Based)
 If you get a 403 Forbidden on RHEL, you may need to update the security context:
