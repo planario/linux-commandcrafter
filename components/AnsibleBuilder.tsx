@@ -8,7 +8,7 @@ interface AnsibleBuilderProps {
     onToggleFavorite: (command: string, type: string) => void;
 }
 
-type AnsibleModule = 'package' | 'service' | 'copy' | 'apt' | 'yum' | 'command' | 'user';
+type AnsibleModule = 'package' | 'service' | 'copy' | 'apt' | 'dnf' | 'yum' | 'command' | 'user';
 
 interface AnsibleTask {
     id: string;
@@ -23,56 +23,62 @@ interface TaskPreset {
 }
 
 const PRESETS: TaskPreset[] = [
-    { name: 'Install a Package', task: { name: 'Ensure nginx is installed', module: 'package', args: { name: 'nginx', state: 'present' }}},
-    { name: 'Manage a Service', task: { name: 'Ensure nginx is running and enabled', module: 'service', args: { name: 'nginx', state: 'started', enabled: 'yes' }}},
-    { name: 'Copy a File', task: { name: 'Copy config file', module: 'copy', args: { src: '/local/path/nginx.conf', dest: '/etc/nginx/nginx.conf', mode: '0644' }}},
-    { name: 'Run a Command', task: { name: 'Print uptime', module: 'command', args: { cmd: 'uptime' }}},
-    { name: 'Update APT Cache', task: { name: 'Update apt cache', module: 'apt', args: { update_cache: 'yes' }}},
-    { name: 'Upgrade APT Packages', task: { name: 'Upgrade all apt packages', module: 'apt', args: { upgrade: 'dist' }}},
-    { name: 'Manage a User', task: { name: 'Ensure user exists', module: 'user', args: { name: 'deploy', state: 'present', shell: '/bin/bash' }}},
+    { name: 'Install (Generic)', task: { name: 'Ensure package is installed', module: 'package', args: { name: 'nginx', state: 'present' }}},
+    { name: 'APT: Update & Install', task: { name: 'Update cache and install via APT', module: 'apt', args: { name: 'nginx', state: 'present', update_cache: 'yes' }}},
+    { name: 'DNF: Update & Install', task: { name: 'Update cache and install via DNF', module: 'dnf', args: { name: 'nginx', state: 'present', update_cache: 'yes' }}},
+    { name: 'YUM: Update & Install', task: { name: 'Update cache and install via YUM', module: 'yum', args: { name: 'nginx', state: 'present', update_cache: 'yes' }}},
+    { name: 'Manage Service', task: { name: 'Ensure service is started', module: 'service', args: { name: 'nginx', state: 'started', enabled: 'yes' }}},
+    { name: 'Copy File', task: { name: 'Copy local config to remote', module: 'copy', args: { src: '/local/path/file.conf', dest: '/etc/file.conf', mode: '0644' }}},
+    { name: 'Run Command', task: { name: 'Execute shell command', module: 'command', args: { cmd: 'uptime' }}},
+    { name: 'Manage User', task: { name: 'Create deployment user', module: 'user', args: { name: 'deploy', state: 'present', shell: '/bin/bash' }}},
 ];
 
 const MODULE_ARG_DESCRIPTIONS: Record<AnsibleModule, Record<string, string>> = {
   package: {
-    name: 'Name of the package to install (e.g., nginx, vim).',
-    state: 'Choose whether the package should be `present`, `absent`, or the `latest` version.',
-  },
-  service: {
-    name: 'Name of the service to manage (e.g., nginx, sshd).',
-    state: 'Choose `started`, `stopped`, `restarted`, or `reloaded`.',
-    enabled: '`yes` or `no`. Whether the service should start on boot.',
-  },
-  copy: {
-    src: 'Path to the file on the Ansible controller machine.',
-    dest: 'Path on the remote server where the file will be copied.',
-    mode: 'Permissions for the destination file (e.g., 0644).',
-    owner: 'User that should own the file (e.g., www-data).',
-    group: 'Group that should own the file (e.g., www-data).',
+    name: 'Name of the package (cross-distribution).',
+    state: 'Choose `present`, `absent`, or `latest`.',
   },
   apt: {
-    name: 'Name of the apt package.',
+    name: 'Name of the APT package (Debian/Ubuntu).',
     state: '`present`, `absent`, or `latest`.',
-    update_cache: 'Set to `yes` to run `apt-get update` before the operation.',
-    upgrade: '`dist` or `yes`. Perform an `apt-get upgrade` or `dist-upgrade`.',
+    update_cache: 'Set to `yes` to run `apt-get update` first.',
+    upgrade: 'Set to `dist` or `yes` to upgrade packages.',
+    force_apt_get: 'Force usage of apt-get instead of aptitude.',
+  },
+  dnf: {
+    name: 'Name of the DNF package (RHEL/CentOS 8+, Fedora).',
+    state: '`present`, `absent`, or `latest`.',
+    update_cache: 'Set to `yes` to force a cache update.',
+    enablerepo: 'Enable specific repositories for this task.',
+    nobest: 'Set to `yes` to allow installation without the absolute best version.',
   },
   yum: {
-    name: 'Name of the yum package.',
+    name: 'Name of the YUM package (RHEL/CentOS 7).',
     state: '`present`, `absent`, or `latest`.',
-    update_cache: 'Set to `yes` to run `yum check-update` before the operation.',
+    update_cache: 'Set to `yes` to force a cache update.',
+    enablerepo: 'Enable specific repositories.',
+  },
+  service: {
+    name: 'Name of the service (e.g., nginx, sshd).',
+    state: '`started`, `stopped`, `restarted`, or `reloaded`.',
+    enabled: '`yes` or `no`. Whether it starts on boot.',
+  },
+  copy: {
+    src: 'Local path on controller machine.',
+    dest: 'Remote path on target server.',
+    mode: 'Octal permissions (e.g., 0644).',
+    owner: 'User owner of the file.',
   },
   command: {
-    cmd: 'The command to execute on the remote host.',
-    chdir: 'Change into this directory before running the command.',
-    creates: 'A filename. If it exists, this step will not be run.',
+    cmd: 'The shell command to execute.',
+    chdir: 'Change into this directory before running.',
   },
   user: {
-    name: 'The name of the user to create or manage.',
-    state: '`present` or `absent`. Whether the user should exist.',
-    shell: 'Specify the user\'s shell (e.g., /bin/bash).',
-    groups: 'A comma-separated list of groups to add the user to.',
+    name: 'The user account name.',
+    state: '`present` or `absent`.',
+    groups: 'Comma-separated list of secondary groups.',
   },
 };
-
 
 const TrashIcon = () => (
      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -96,7 +102,7 @@ const TaskEditor: React.FC<{ task: AnsibleTask, onUpdate: (task: AnsibleTask) =>
                     placeholder="Task Name"
                     className="w-full bg-transparent text-gray-200 font-semibold focus:outline-none"
                 />
-                <button onClick={onRemove} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors flex-shrink-0 ml-2"><TrashIcon /></button>
+                <button onClick={onRemove} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors flex-shrink-0 ml-2" title="Delete Task"><TrashIcon /></button>
             </div>
            
             <div className="flex items-center gap-2">
@@ -116,7 +122,7 @@ const TaskEditor: React.FC<{ task: AnsibleTask, onUpdate: (task: AnsibleTask) =>
                                 onChange={(e) => handleArgChange(key, e.target.value)}
                                 className="w-full bg-gray-800 border border-gray-600 rounded-md px-2 py-1 focus:ring-teal-500 focus:border-teal-500 text-sm"
                             />
-                            {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
+                            {description && <p className="text-[10px] text-gray-500 mt-1 leading-tight">{description}</p>}
                         </div>
                     );
                 })}
@@ -191,12 +197,12 @@ export const AnsibleBuilder: React.FC<AnsibleBuilderProps> = ({ onCommandGenerat
              <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold text-teal-400">Ansible Playbook Builder</h2>
-                    <p className="text-gray-400 mt-1">Visually create automation playbooks using presets.</p>
+                    <p className="text-gray-400 mt-1">Visually create automation playbooks for any distribution.</p>
                 </div>
                  <button onClick={resetAllFields} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md text-white font-semibold transition-colors text-sm">Clear All</button>
             </div>
 
-            <div className="bg-gray-700/50 p-6 rounded-lg flex flex-col gap-4">
+            <div className="bg-gray-700/50 p-6 rounded-lg flex flex-col gap-4 border border-gray-600">
                  <h3 className="text-lg font-semibold text-gray-200">Play Details</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -206,28 +212,41 @@ export const AnsibleBuilder: React.FC<AnsibleBuilderProps> = ({ onCommandGenerat
                      <div>
                         <label htmlFor="target-hosts" className="block text-sm font-medium text-gray-400 mb-2">Target Hosts</label>
                         <input id="target-hosts" value={hosts} onChange={e => setHosts(e.target.value)} placeholder="e.g., all, webservers" className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"/>
-                        <p className="text-xs text-gray-500 mt-1">The group from your inventory file to target.</p>
+                        <p className="text-[10px] text-gray-500 mt-1">Defined in your inventory file.</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 mt-2">
                     <input type="checkbox" id="become" checked={become} onChange={e => setBecome(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
-                    <label htmlFor="become" className="text-sm text-gray-300">Use privilege escalation (<span className="font-mono">become: true</span>)</label>
+                    <label htmlFor="become" className="text-sm text-gray-300">Run with sudo (<span className="font-mono">become: true</span>)</label>
                 </div>
             </div>
 
             <div className="flex flex-col gap-4">
-                 <h3 className="text-lg font-semibold text-gray-200">Tasks</h3>
-                 <div className="bg-gray-700/50 p-4 rounded-lg">
-                     <h4 className="font-semibold text-gray-300 mb-3">Add a common task:</h4>
+                 <h3 className="text-lg font-semibold text-gray-200">Task Timeline</h3>
+                 <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+                     <h4 className="font-semibold text-gray-300 mb-3 text-sm">Add Manager-Specific Task:</h4>
                      <div className="flex flex-wrap gap-2">
                          {PRESETS.map(preset => (
-                             <button key={preset.name} onClick={() => addTask(preset)} className="px-3 py-1.5 bg-teal-800 hover:bg-teal-700 rounded-md text-teal-200 font-semibold transition-colors text-sm">{preset.name}</button>
+                             <button 
+                                key={preset.name} 
+                                onClick={() => addTask(preset)} 
+                                className="px-3 py-1.5 bg-teal-800 hover:bg-teal-700 rounded-md text-teal-200 font-semibold transition-colors text-xs"
+                             >
+                                 {preset.name}
+                             </button>
                          ))}
                      </div>
                  </div>
-                {tasks.map(task => (
-                    <TaskEditor key={task.id} task={task} onUpdate={updateTask} onRemove={() => removeTask(task.id)} />
-                ))}
+                <div className="flex flex-col gap-4">
+                    {tasks.map(task => (
+                        <TaskEditor key={task.id} task={task} onUpdate={updateTask} onRemove={() => removeTask(task.id)} />
+                    ))}
+                    {tasks.length === 0 && (
+                        <div className="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg text-gray-500">
+                            No tasks added yet. Click a preset above to start building.
+                        </div>
+                    )}
+                </div>
             </div>
             
             <GeneratedCommand 

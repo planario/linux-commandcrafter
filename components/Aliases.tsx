@@ -65,9 +65,22 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
         }
     };
 
+    const getCleanCommand = (alias: Alias) => {
+        return alias.runInSubshell ? `(${alias.command})` : alias.command;
+    };
+
     const formatAliasLine = (alias: Alias) => {
-        const cmd = alias.runInSubshell ? `(${alias.command})` : alias.command;
-        return `alias ${alias.name}='${cmd}'`;
+        // Escape single quotes within the command string for the alias definition
+        // Example: echo 'hi' becomes echo '\''hi'\''
+        const escapedCommand = getCleanCommand(alias).replace(/'/g, "'\\''");
+        return `alias ${alias.name}='${escapedCommand}'`;
+    };
+
+    const formatQuickInstallLine = (alias: Alias) => {
+        const aliasLine = formatAliasLine(alias);
+        // Escape single quotes for the outer echo command
+        const escapedLine = aliasLine.replace(/'/g, "'\\''");
+        return `echo '${escapedLine}' >> ~/.bashrc && . ~/.bashrc`;
     };
 
     return (
@@ -87,14 +100,14 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
                         onChange={e => setName(e.target.value)} 
                         placeholder="Alias Name (e.g., 'back')" 
                         required 
-                        className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500 text-gray-200"
                     />
                     <input 
                         type="text" 
                         value={description} 
                         onChange={e => setDescription(e.target.value)} 
                         placeholder="Short description (optional)" 
-                        className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500"
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500 text-gray-200"
                     />
                 </div>
 
@@ -104,7 +117,7 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
                     placeholder="Full command (e.g., 'cd /var/www && ls -la')" 
                     required 
                     rows={3} 
-                    className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 font-mono focus:ring-teal-500 focus:border-teal-500"
+                    className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 font-mono focus:ring-teal-500 focus:border-teal-500 text-teal-300"
                 />
 
                 <div className="flex items-center gap-3 bg-gray-900/40 p-3 rounded-md border border-gray-600/30">
@@ -147,11 +160,30 @@ export const Aliases: React.FC<AliasesProps> = ({ aliases, setAliases }) => {
                                 <button onClick={() => handleDelete(alias.id)} className="p-2 text-gray-400 hover:text-white rounded-md bg-gray-700 hover:bg-gray-600 transition-colors" title="Delete Alias"><TrashIcon /></button>
                             </div>
                         </div>
-                        <div className="mt-4">
-                            <span className="text-xs font-semibold text-gray-500 mb-1 block">Shell definition:</span>
-                            <code className="block bg-gray-800 p-3 rounded-md text-teal-300 text-sm break-all select-all font-mono">
-                                {formatAliasLine(alias)}
-                            </code>
+                        
+                        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                                <span className="text-[10px] uppercase font-bold text-gray-500 mb-1 block tracking-wider">Shell Definition:</span>
+                                <code className="block bg-gray-800 p-3 rounded-md text-teal-300 text-sm break-all select-all font-mono border border-gray-700/50">
+                                    {formatAliasLine(alias)}
+                                </code>
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Permanent Install (Bash):</span>
+                                    <div className="group relative">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-600 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-gray-200 text-[10px] rounded shadow-xl border border-gray-600 invisible group-hover:visible z-10 pointer-events-none">
+                                            Appends the alias to your .bashrc and runs 'source' to enable it immediately in your terminal.
+                                        </div>
+                                    </div>
+                                </div>
+                                <code className="block bg-gray-800 p-3 rounded-md text-teal-300 text-sm break-all select-all font-mono border border-gray-700/50">
+                                    {formatQuickInstallLine(alias)}
+                                </code>
+                            </div>
                         </div>
                     </div>
                 ))}
