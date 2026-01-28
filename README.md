@@ -1,213 +1,110 @@
-# Linux CommandCrafter Deployment Guide
+# 🛠️ Linux CommandCrafter
 
-This guide provides step-by-step instructions for deploying the Linux CommandCrafter application.
-
----
-
-## Automated Deployment (Recommended)
-
-An automated deployment script is provided to handle all the setup steps for you on a fresh Debian or Ubuntu server.
-
-1.  **Download the Deployment Script:**
-    First, get the `deploy.sh` script onto your server.
-    ```bash
-    # You may need to install git first: sudo apt update && sudo apt install git
-    # Replace the URL with the actual repository URL if you have a fork.
-    git clone https://github.com/example/commandcrafter.git
-    cd commandcrafter
-    ```
-    
-2.  **Make the Script Executable:**
-    ```bash
-    chmod +x deploy.sh
-    ```
-
-3.  **Run the Script as Root:**
-    The script will install packages and configure system services, so it needs root privileges.
-    ```bash
-    sudo ./deploy.sh
-    ```
-
-The script will prompt you for your server's domain name or IP address and handle the rest. Once it finishes, your application will be live and ready to use.
+A professional, dark-themed utility for visually constructing, analyzing, and managing complex Linux commands.
 
 ---
 
-## Manual Deployment
+## 🚀 Deployment Options
 
-If you prefer to set up the server manually, follow the steps below.
-
-### Pre-requisites
-
-Before you begin, ensure you have the following:
-
-1.  **A Debian or Ubuntu Server**: A clean installation of a recent LTS version (e.g., Ubuntu 22.04, Debian 11/12).
-2.  **Sudo Access**: You will need root privileges to install packages and configure the server.
-3.  **Server Access**: You should be able to connect to your server via SSH.
-4.  **A Domain Name (Optional)**: If you want to access your app via a domain name (e.g., `commands.yourdomain.com`), make sure you have one and can configure its DNS records. If not, you can use your server's IP address.
-
-### Step 1: Connect to Your Server
-
-First, connect to your server using SSH. Replace `user` with your username and `your_server_ip` with your server's public IP address.
+### 1. Docker (Recommended)
+The fastest way to get CommandCrafter running on any platform with Docker installed.
 
 ```bash
-ssh user@your_server_ip
+# Build and start
+docker-compose up -d
 ```
+Access the app at `http://localhost:8080`.
 
-### Step 2: Install Dependencies (Node.js, npm, Git)
+---
 
-The application needs to be "built" on the server. This process compiles the code into static HTML, CSS, and JavaScript files. This requires Node.js and npm. We'll also install Git to clone the application's source code.
+### 2. Automated Linux Script
+Deploy to a fresh server in seconds. This script handles OS detection, Node.js installation, Nginx configuration, and security headers.
 
-1.  **Update your package list:**
-    ```bash
-    sudo apt update && sudo apt upgrade -y
-    ```
-
-2.  **Install Git:**
-    ```bash
-    sudo apt install git -y
-    ```
-
-3.  **Install Node.js and npm:**
-    We recommend using the NodeSource repository for a recent version of Node.js.
-
-    ```bash
-    # Download and run the NodeSource setup script for Node.js v20.x
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-
-    # Install Node.js and npm
-    sudo apt install -y nodejs
-    ```
-
-4.  **Verify the installation:**
-    ```bash
-    node -v  # Should show v20.x.x
-    npm -v   # Should show a recent version
-    ```
-
-### Step 3: Clone the Application Repository
-
-Clone the Linux CommandCrafter source code from its repository onto your server.
+**Supports:** Ubuntu, Debian, RHEL, CentOS, Fedora.
 
 ```bash
-# Clone into a directory named 'commandcrafter'
-git clone https://github.com/example/commandcrafter.git
+# Clone the repository
+git clone https://github.com/your-repo/commandcrafter.git
+cd commandcrafter
+
+# Execute the deployment engine
+sudo chmod +x deploy.sh
+sudo ./deploy.sh
 ```
-*(Note: Replace the URL with the actual repository URL if different.)*
 
-### Step 4: Build the Application
+---
 
-Now, navigate into the project directory, install its dependencies, and run the build script.
+### 3. Manual Installation
 
-1.  **Navigate into the project directory:**
-    ```bash
-    cd commandcrafter
-    ```
+#### 📦 Phase A: System Dependencies
 
-2.  **Install project dependencies:**
-    This reads the `package.json` file and downloads the required libraries.
-    ```bash
-    npm install
-    ```
+**For Debian / Ubuntu:**
+```bash
+sudo apt update
+sudo apt install -y git curl nginx
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
 
-3.  **Build the application:**
-    This command compiles the React/TypeScript code into a `dist` directory.
-    ```bash
-    npm run build
-    ```
+**For RHEL / CentOS / Fedora:**
+```bash
+sudo dnf update -y
+sudo dnf install -y git curl nginx
+curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+sudo dnf install -y nodejs
+```
 
-After this step, you will have a `dist` directory inside your `commandcrafter` folder. This folder contains the static files we need to deploy.
+#### 🏗️ Phase B: Build & Serve
+```bash
+# Build the project
+npm install
+npm run build
 
-### Step 5: Install and Configure Nginx
+# Prepare the web directory
+sudo mkdir -p /var/www/commandcrafter
+sudo cp -r dist/* /var/www/commandcrafter/
 
-Nginx will act as our web server.
+# Set Permissions
+# (For Debian/Ubuntu)
+sudo chown -R www-data:www-data /var/www/commandcrafter
+# (For RHEL/CentOS)
+sudo chown -R nginx:nginx /var/www/commandcrafter
+```
 
-1.  **Install Nginx:**
-    ```bash
-    sudo apt install nginx -y
-    ```
+#### 🌐 Phase C: Nginx Configuration
+Create `/etc/nginx/sites-available/commandcrafter` (Debian) or `/etc/nginx/conf.d/commandcrafter.conf` (RHEL):
 
-2.  **Create a new Nginx configuration file:**
-    We will create a server block configuration for our application. Use a text editor like `nano`.
-
-    ```bash
-    sudo nano /etc/nginx/sites-available/commandcrafter
-    ```
-
-3.  **Paste the following configuration into the file:**
-
-    This configuration tells Nginx to listen on port 80, serve files from `/var/www/commandcrafter`, and correctly handle routing for a single-page application (SPA).
-
-    ```nginx
-    server {
-        listen 80;
-        listen [::]:80;
-
-        # Replace your_server_ip with your server's IP or domain name
-        server_name your_server_ip;
-
-        root /var/www/commandcrafter;
-        index index.html;
-
-        location / {
-            try_files $uri $uri/ /index.html;
-        }
+```nginx
+server {
+    listen 80;
+    root /var/www/commandcrafter;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
     }
-    ```
-    - **Important**: Change `your_server_ip` to your server's actual IP address or your domain name.
-    - Save the file and exit `nano` (press `Ctrl+X`, then `Y`, then `Enter`).
-
-4.  **Enable the new configuration:**
-    We do this by creating a symbolic link from `sites-available` to `sites-enabled`.
-
-    ```bash
-    sudo ln -s /etc/nginx/sites-available/commandcrafter /etc/nginx/sites-enabled/
-    ```
-
-5.  **Remove the default Nginx configuration (optional but recommended):**
-    ```bash
-    sudo rm /etc/nginx/sites-enabled/default
-    ```
-
-### Step 6: Deploy the Files
-
-1.  **Create the web root directory:**
-    This is the directory we specified in our Nginx configuration.
-    ```bash
-    sudo mkdir -p /var/www/commandcrafter
-    ```
-
-2.  **Copy the built files to the web root:**
-    From inside your `commandcrafter` project directory (where the `dist` folder is):
-    ```bash
-    sudo cp -r dist/* /var/www/commandcrafter/
-    ```
-
-### Step 7: Finalize and Verify
-
-1.  **Test the Nginx configuration for syntax errors:**
-    ```bash
-    sudo nginx -t
-    ```
-    If you see `syntax is ok` and `test is successful`, you are good to go.
-
-2.  **Restart Nginx to apply all changes:**
-    ```bash
-    sudo systemctl restart nginx
-    ```
-
-3.  **(Recommended) Configure Firewall:**
-    If you have a firewall like `ufw` enabled, allow HTTP traffic.
-    ```bash
-    sudo ufw allow 'Nginx HTTP'
-    sudo ufw status
-    ```
-
-### Step 8: Access the Application
-
-You're done! Open your web browser and navigate to your server's IP address:
-
-```
-http://your_server_ip
+}
 ```
 
-You should now see the Linux CommandCrafter application running live from your server.
+---
+
+## 🛡️ Security & Hardening
+
+### Firewall
+Ensure port 80 is open:
+- **UFW:** `sudo ufw allow 'Nginx Full'`
+- **Firewalld:** `sudo firewall-cmd --permanent --add-service=http && sudo firewall-cmd --reload`
+
+### SELinux (RHEL Based)
+If you get a 403 Forbidden on RHEL, you may need to update the security context:
+```bash
+sudo chcon -Rt httpd_sys_content_t /var/www/commandcrafter
+```
+
+---
+
+## 🧩 Features
+- **Visual Builders:** Cron, UFW, FFmpeg, Ansible, and more.
+- **AI Analyzer:** Explain any command using Gemini.
+- **Script Studio:** Build Bash scripts using visual logic blocks.
+- **SSH Manager:** Securely generate and distribute keys.
+- **Alias Forge:** Create permanent Bash aliases with one click.
