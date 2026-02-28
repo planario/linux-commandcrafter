@@ -18,13 +18,37 @@ const TutorialCard: React.FC<{ tutorial: Tutorial, isOpen: boolean, onToggle: ()
                 <div className="p-4 space-y-4">
                     {tutorial.content.map((item, index) => {
                         if (item.type === 'heading') {
-                            return <h4 key={index} className="text-md font-semibold text-gray-200 pt-2">{item.text}</h4>;
+                            return <h4 key={index} className="text-md font-semibold text-gray-200 pt-2 border-b border-gray-700 pb-1">{item.text}</h4>;
                         }
                         if (item.type === 'paragraph') {
-                            return <p key={index} className="text-gray-400">{item.text}</p>;
+                            return <p key={index} className="text-gray-400 leading-relaxed">{item.text}</p>;
                         }
                         if (item.type === 'code') {
-                            return <pre key={index}><code className="block bg-gray-800 p-3 rounded-md text-teal-300 text-sm break-all select-all font-mono">{item.text}</code></pre>;
+                            return <pre key={index} className="overflow-x-auto"><code className="block bg-gray-800 p-3 rounded-md text-teal-300 text-sm select-all font-mono whitespace-pre">{item.text}</code></pre>;
+                        }
+                        if (item.type === 'tip') {
+                            return (
+                                <div key={index} className="flex gap-3 bg-teal-900/30 border border-teal-700/50 rounded-md p-3">
+                                    <span className="text-teal-400 font-bold text-sm shrink-0">TIP</span>
+                                    <p className="text-teal-200 text-sm leading-relaxed">{item.text}</p>
+                                </div>
+                            );
+                        }
+                        if (item.type === 'warning') {
+                            return (
+                                <div key={index} className="flex gap-3 bg-yellow-900/30 border border-yellow-700/50 rounded-md p-3">
+                                    <span className="text-yellow-400 font-bold text-sm shrink-0">WARN</span>
+                                    <p className="text-yellow-200 text-sm leading-relaxed">{item.text}</p>
+                                </div>
+                            );
+                        }
+                        if (item.type === 'note') {
+                            return (
+                                <div key={index} className="flex gap-3 bg-blue-900/30 border border-blue-700/50 rounded-md p-3">
+                                    <span className="text-blue-400 font-bold text-sm shrink-0">NOTE</span>
+                                    <p className="text-blue-200 text-sm leading-relaxed">{item.text}</p>
+                                </div>
+                            );
                         }
                         return null;
                     })}
