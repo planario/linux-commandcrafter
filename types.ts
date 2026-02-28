@@ -42,7 +42,7 @@ export interface Alias {
 }
 
 export interface TutorialContent {
-    type: 'heading' | 'paragraph' | 'code';
+    type: 'heading' | 'paragraph' | 'code' | 'tip' | 'warning' | 'note';
     text: string;
 }
 

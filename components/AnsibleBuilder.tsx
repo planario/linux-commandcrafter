@@ -77,8 +77,24 @@ const MODULE_ARG_DESCRIPTIONS: Record<AnsibleModule, Record<string, string>> = {
     name: 'The user account name.',
     state: '`present` or `absent`.',
     groups: 'Comma-separated list of secondary groups.',
+    shell: 'Login shell for the user (e.g., /bin/bash).',
   },
 };
+
+// Quote a YAML scalar value when it would be misinterpreted:
+//   - octal-like  (0644, 0755 → becomes integer 420 without quotes)
+//   - YAML booleans (yes/no/true/false → become bool)
+//   - values with YAML-special characters or empty strings
+function yamlQuote(value: string): string {
+  if (value === '') return '""';
+  const isBoolLike = /^(true|false|yes|no|on|off|null|~)$/i.test(value);
+  const isOctalLike = /^0[0-7]+$/.test(value);
+  const hasSpecialChars = /[:#\[\]{}&*!|>'"%@`]/.test(value) || /^\s|\s$/.test(value);
+  if (isBoolLike || isOctalLike || hasSpecialChars) {
+    return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  }
+  return value;
+}
 
 const TrashIcon = () => (
      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -174,7 +190,8 @@ export const AnsibleBuilder: React.FC<AnsibleBuilderProps> = ({ onCommandGenerat
                 yaml += `    - name: ${task.name}\n`;
                 yaml += `      ansible.builtin.${task.module}:\n`;
                 Object.entries(task.args).forEach(([key, value]) => {
-                    yaml += `        ${key}: ${value}\n`;
+                    if (value.trim() === '') return; // skip empty fields
+                    yaml += `        ${key}: ${yamlQuote(value)}\n`;
                 });
                 yaml += `\n`;
             });

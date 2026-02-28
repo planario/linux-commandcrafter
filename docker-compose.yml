@@ -2,10 +2,11 @@ version: '3.8'
 
 services:
   commandcrafter:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_API_KEY: ${VITE_API_KEY}
     container_name: linux-command-crafter
     ports:
       - "7256:80"
-    environment:
-      - API_KEY=${API_KEY}
     restart: always

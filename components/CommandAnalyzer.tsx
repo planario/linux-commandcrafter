@@ -40,9 +40,9 @@ export const CommandAnalyzer: React.FC = () => {
     setAnalysis(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || '' });
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.0-flash',
         contents: `Analyze this Linux command: \`${inputCommand}\``,
         config: {
           systemInstruction: `You are a world-class Linux systems administrator and shell script expert. 

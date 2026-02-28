@@ -30,7 +30,7 @@ const SectionCard: React.FC<{ title: string; children: React.ReactNode }> = ({ t
     </div>
 );
 
-export const SshBuilder: React.FC<SshBuilderProps> = ({ onCommandGenerated, favorites, onToggleFavorite }) => {
+export const SshBuilder: React.FC<SshBuilderProps> = ({ favorites, onToggleFavorite }) => {
   // Key Gen State
   const [keyFilename, setKeyFilename] = useState('id_rsa_server');
   const [keyComment, setKeyComment] = useState('user@email.com');
