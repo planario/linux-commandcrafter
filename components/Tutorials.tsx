@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tutorial, TutorialContent } from '../types';
+import { Tutorial } from '../types';
 
 interface TutorialsProps {
     tutorials: Tutorial[];

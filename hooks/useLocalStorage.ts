@@ -10,7 +10,6 @@ function getValue<T>(key: string, initialValue: T): T {
   }
 }
 
-// FIX: Use `Dispatch<SetStateAction<T>>` directly, as the `React` namespace was not imported. The necessary types are now imported above.
 export function useLocalStorage<T>(key: string, initialValue: T): [T, Dispatch<SetStateAction<T>>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     return getValue(key, initialValue);

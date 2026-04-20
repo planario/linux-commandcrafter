@@ -9,9 +9,6 @@ interface IpBuilderProps {
 }
 
 type Mode = 'addr' | 'link' | 'route';
-type AddrSub = 'show' | 'add' | 'del';
-type LinkSub = 'show' | 'set';
-type RouteSub = 'show' | 'add' | 'del';
 
 const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; description?: string; }> = 
 ({ label, value, onChange, placeholder, description }) => (
