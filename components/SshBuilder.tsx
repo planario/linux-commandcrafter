@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface SshBuilderProps {
   onCommandGenerated: (command: string, type: string) => void;
@@ -46,9 +47,9 @@ export const SshBuilder: React.FC<SshBuilderProps> = ({ favorites, onToggleFavor
   const isFavorite = (cmd: string) => favorites.some(fav => fav.command === cmd);
 
   // Command Generation Logic
-  const keyGenCmd = `ssh-keygen -t rsa -b 4096 -f ~/.ssh/${keyFilename} -C "${keyComment}"`;
-  const copyIdCmd = `ssh-copy-id -i ${publicKeyPath} ${remoteUser}@${remoteHost}`;
-  const manualCopyCmd = `cat ${publicKeyPath} | ssh ${remoteUser}@${remoteHost} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"`;
+  const keyGenCmd = `ssh-keygen -t rsa -b 4096 -f ~/.ssh/${keyFilename} -C ${q(keyComment)}`;
+  const copyIdCmd = `ssh-copy-id -i ${q(publicKeyPath)} ${remoteUser}@${remoteHost}`;
+  const manualCopyCmd = `cat ${q(publicKeyPath)} | ssh ${remoteUser}@${remoteHost} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"`;
   
   const pwAuthValue = allowPassword ? 'yes' : 'no';
   const togglePwCmd = `sudo sed -i 's/^#\\?PasswordAuthentication.*/PasswordAuthentication ${pwAuthValue}/' /etc/ssh/sshd_config && sudo systemctl restart ssh`;

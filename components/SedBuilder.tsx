@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface SedBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
@@ -60,14 +61,15 @@ export const SedBuilder: React.FC<SedBuilderProps> = ({ onCommandGenerated, favo
         if (isGlobal) flags += 'g';
         if (isCaseInsensitive) flags += 'i';
         
-        // Basic escaping for the separator '/'
+        // Escape the delimiter in the search pattern
         const escapedSearch = search.replace(/\//g, '\\/');
-        const escapedReplace = replace.replace(/\//g, '\\/');
+        // Escape \, &, and / in the replacement (all have special meaning in sed's replacement)
+        const escapedReplace = replace.replace(/\\/g, '\\\\').replace(/&/g, '\\&').replace(/\//g, '\\/');
 
         cmd += ` 's/${escapedSearch}/${escapedReplace}/${flags}'`;
 
         if (file) {
-            cmd += ` ${file}`;
+            cmd += ` ${q(file)}`;
         }
 
         setGeneratedCommand(cmd.trim());

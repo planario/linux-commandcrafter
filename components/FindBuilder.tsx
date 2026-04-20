@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface FindBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
@@ -33,15 +34,15 @@ export const FindBuilder: React.FC<FindBuilderProps> = ({ onCommandGenerated, fa
 
     useEffect(() => {
         let cmd = 'find';
-        cmd += ` ${path || '.'}`;
+        cmd += ` ${q(path || '.')}`;
 
         if (type !== 'any') {
             cmd += ` -type ${type}`;
         }
-        
+
         if (namePattern) {
             const nameFlag = isCaseInsensitive ? '-iname' : '-name';
-            cmd += ` ${nameFlag} "${namePattern}"`;
+            cmd += ` ${nameFlag} ${q(namePattern)}`;
         }
 
         setGeneratedCommand(cmd.trim());

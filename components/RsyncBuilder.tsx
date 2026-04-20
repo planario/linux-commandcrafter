@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface RsyncBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
@@ -69,18 +70,18 @@ export const RsyncBuilder: React.FC<RsyncBuilderProps> = ({ onCommandGenerated, 
 
         if (showProgress) cmd += ' --progress';
         if (deleteExtraneous) cmd += ' --delete';
-        if (exclude) cmd += ` --exclude="${exclude}"`;
+        if (exclude) cmd += ` --exclude=${q(exclude)}`;
 
         // SSH options
         let rsh = '';
         if (sshPort || identityFile) {
             rsh = 'ssh';
             if (sshPort) rsh += ` -p ${sshPort}`;
-            if (identityFile) rsh += ` -i "${identityFile}"`;
-            cmd += ` -e "${rsh}"`;
+            if (identityFile) rsh += ` -i ${q(identityFile)}`;
+            cmd += ` -e ${q(rsh)}`;
         }
 
-        cmd += ` ${source || ''} ${destination || ''}`;
+        cmd += ` ${q(source || '')} ${q(destination || '')}`;
         setGeneratedCommand(cmd.trim());
 
     }, [source, destination, isArchive, isVerbose, isCompress, showProgress, deleteExtraneous, dryRun, identityFile, sshPort, exclude]);

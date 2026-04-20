@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface GitBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
@@ -64,14 +65,14 @@ export const GitBuilder: React.FC<GitBuilderProps> = ({ onCommandGenerated, favo
         switch (subcommand) {
             case 'clone':
                 cmd += ` ${finalCloneRepoUrl || ''}`;
-                if (cloneDir) cmd += ` ${cloneDir}`;
+                if (cloneDir) cmd += ` ${q(cloneDir)}`;
                 break;
             case 'add':
-                cmd += ` ${addPath || '.'}`;
+                cmd += ` ${q(addPath || '.')}`;
                 break;
             case 'commit':
                 if (commitAmend) cmd += ' --amend';
-                if (commitMsg) cmd += ` -m "${commitMsg}"`;
+                if (commitMsg) cmd += ` -m ${q(commitMsg)}`;
                 break;
             case 'push':
                 if (pushForce) cmd += ' --force';

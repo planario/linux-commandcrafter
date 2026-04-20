@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface GrepBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
@@ -66,8 +67,8 @@ export const GrepBuilder: React.FC<GrepBuilderProps> = ({ onCommandGenerated, fa
             cmd += ` -${flags.join('')}`;
         }
         
-        cmd += ` "${pattern || ''}"`;
-        cmd += ` ${path || ''}`;
+        cmd += ` ${q(pattern || '')}`;
+        if (path) cmd += ` ${q(path)}`;
         
         setGeneratedCommand(cmd.trim());
 

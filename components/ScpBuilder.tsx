@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
+import { shellQuote as q } from '../utils/shell';
 
 interface ScpBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
@@ -66,16 +67,15 @@ export const ScpBuilder: React.FC<ScpBuilderProps> = ({ onCommandGenerated, favo
         }
 
         if (port) cmd += ` -P ${port}`;
-        if (identityFile) cmd += ` -i "${identityFile}"`;
-        
-        // Handle Auth Token: Often used with specific SSH wrappers or environment variables
-        // Here we'll append it as a comment-style helper or environment variable prefix if used
+        if (identityFile) cmd += ` -i ${q(identityFile)}`;
+
+        // Handle Auth Token: prepend as an environment variable for SSH wrappers
         let prefix = '';
         if (authToken) {
-            prefix = `AUTH_TOKEN="${authToken}" `;
+            prefix = `AUTH_TOKEN=${q(authToken)} `;
         }
 
-        cmd = `${prefix}${cmd} ${source || ''} ${destination || ''}`;
+        cmd = `${prefix}${cmd} ${q(source || '')} ${q(destination || '')}`;
         setGeneratedCommand(cmd.trim());
 
     }, [source, destination, port, isRecursive, preserve, compress, identityFile, authToken, verbose]);
