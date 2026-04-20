@@ -175,7 +175,7 @@ const generateScript = (blocks: ScriptBlock[], indent = ''): string => {
             case 'comment': script += `${indent}# ${block.data.text}\n`; break;
             case 'variable': script += `${indent}${block.data.name}=${block.data.value}\n`; break;
             case 'echo': script += `${indent}echo ${block.data.text}\n`; break;
-            case 'read': script += `${indent}read -p "${block.data.prompt}" ${block.data.variable}\n`; break;
+            case 'read': script += `${indent}read -p '${block.data.prompt.replace(/'/g, "'\\''")}' ${block.data.variable}\n`; break;
             case 'command': script += `${indent}${block.data.command}\n`; break;
             case 'if':
                 script += `${indent}if ${block.data.condition}; then\n`;

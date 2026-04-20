@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CommandDefinition, CommandEntry, OptionType } from '../types';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CheckboxOption } from './CheckboxOption';
+import { shellQuote as q } from '../utils/shell';
 
 interface CommandBuilderProps {
   command: CommandDefinition;
@@ -40,7 +41,7 @@ export const CommandBuilder: React.FC<CommandBuilderProps> = ({ command, onComma
         if (optionDef.type === OptionType.VALUE) {
             const value = (optionValues[optionName] || '').trim();
             if (value) {
-                activeOptionsParts.push(`${flag} ${value}`);
+                activeOptionsParts.push(`${flag} ${q(value)}`);
             }
         } else {
             activeOptionsParts.push(flag);
@@ -54,6 +55,7 @@ export const CommandBuilder: React.FC<CommandBuilderProps> = ({ command, onComma
       const finalArgs = command.args
         ?.map(arg => argValues[arg.name]?.trim() || '')
         .filter(Boolean)
+        .map(q)
         .join(' ');
 
       if (finalArgs) {
