@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
+import { MAX_ANALYZER_INPUT_LENGTH } from '../utils/sanitize';
+
+/** Minimum seconds between analysis requests (client-side rate limit). */
+const RATE_LIMIT_SECONDS = 10;
 
 interface AnalysisResult {
   isError: boolean;
@@ -31,25 +35,50 @@ export const CommandAnalyzer: React.FC = () => {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  const cooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+
+  const startCooldown = () => {
+    setCooldown(RATE_LIMIT_SECONDS);
+    if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+    cooldownTimer.current = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(cooldownTimer.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const analyzeCommand = async () => {
-    if (!inputCommand.trim()) return;
+    const trimmed = inputCommand.trim();
+    if (!trimmed || isLoading || cooldown > 0) return;
+
+    if (!apiKey) {
+      setError('No API key configured. Set VITE_GEMINI_API_KEY in your .env file.');
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
     setAnalysis(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || '' });
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-2.0-flash',
-        contents: `Analyze this Linux command: \`${inputCommand}\``,
+        contents: `Analyze this Linux command: \`${trimmed}\``,
         config: {
-          systemInstruction: `You are a world-class Linux systems administrator and shell script expert. 
-          Analyze the provided command. Identify its components, flags, and arguments. 
-          Determine if the syntax is valid (ignoring context-specific file existence unless it's a logical impossibility). 
+          systemInstruction: `You are a world-class Linux systems administrator and shell script expert.
+          Analyze the provided command. Identify its components, flags, and arguments.
+          Determine if the syntax is valid (ignoring context-specific file existence unless it's a logical impossibility).
           Assess the safety level of the command.
-          
+
           Return a JSON object with:
           - isError: boolean (true if syntax is broken or command is logically invalid)
           - explanation: string (A concise, step-by-step breakdown using bullet points)
@@ -59,32 +88,42 @@ export const CommandAnalyzer: React.FC = () => {
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              isError: { type: Type.BOOLEAN },
-              explanation: { type: Type.STRING },
+              isError:      { type: Type.BOOLEAN },
+              explanation:  { type: Type.STRING },
               errorDetails: { type: Type.STRING },
-              safetyLevel: { type: Type.STRING, enum: ['Safe', 'Caution', 'Dangerous'] }
+              safetyLevel:  { type: Type.STRING, enum: ['Safe', 'Caution', 'Dangerous'] },
             },
-            required: ['isError', 'explanation', 'safetyLevel']
-          }
-        }
+            required: ['isError', 'explanation', 'safetyLevel'],
+          },
+        },
       });
 
       const result = JSON.parse(response.text || '{}') as AnalysisResult;
       setAnalysis(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Analysis failed:', err);
       setError('Failed to analyze command. Please check your internet connection or try again.');
     } finally {
       setIsLoading(false);
+      startCooldown();
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      analyzeCommand();
+    }
+  };
+
+  const canSubmit = inputCommand.trim().length > 0 && !isLoading && cooldown === 0 && !!apiKey;
+
   const getSafetyStyles = (level: string) => {
     switch (level) {
-      case 'Safe': return 'bg-green-900/40 text-green-400 border-green-500/30';
-      case 'Caution': return 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30';
+      case 'Safe':      return 'bg-green-900/40 text-green-400 border-green-500/30';
+      case 'Caution':   return 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30';
       case 'Dangerous': return 'bg-red-900/40 text-red-400 border-red-500/30';
-      default: return 'bg-gray-800 text-gray-400 border-gray-700';
+      default:          return 'bg-gray-800 text-gray-400 border-gray-700';
     }
   };
 
@@ -95,19 +134,37 @@ export const CommandAnalyzer: React.FC = () => {
         <p className="text-gray-400 mt-1">Paste a Linux command to see a detailed explanation and safety check.</p>
       </header>
 
+      {!apiKey && (
+        <div className="bg-yellow-900/20 border border-yellow-500/40 text-yellow-400 p-4 rounded-lg flex items-start gap-3 text-sm">
+          <AlertIcon />
+          <span>
+            <strong>API key not configured.</strong> Create a <code className="font-mono bg-gray-800 px-1 rounded">.env</code> file
+            at the project root and set <code className="font-mono bg-gray-800 px-1 rounded">VITE_GEMINI_API_KEY=your_key</code>.
+            See <code className="font-mono bg-gray-800 px-1 rounded">.env.example</code> for reference.
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4">
-        <textarea
-          value={inputCommand}
-          onChange={(e) => setInputCommand(e.target.value)}
-          placeholder="e.g., find . -name '*.log' -delete"
-          rows={3}
-          className="w-full bg-gray-900 border border-gray-600 rounded-lg p-4 font-mono text-teal-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none"
-        />
+        <div className="relative">
+          <textarea
+            value={inputCommand}
+            onChange={e => setInputCommand(e.target.value.slice(0, MAX_ANALYZER_INPUT_LENGTH))}
+            onKeyDown={handleKeyDown}
+            placeholder="e.g., find . -name '*.log' -delete"
+            rows={3}
+            maxLength={MAX_ANALYZER_INPUT_LENGTH}
+            className="w-full bg-gray-900 border border-gray-600 rounded-lg p-4 font-mono text-teal-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none"
+          />
+          <span className="absolute bottom-2 right-3 text-xs text-gray-600 select-none">
+            {inputCommand.length}/{MAX_ANALYZER_INPUT_LENGTH}
+          </span>
+        </div>
         <button
           onClick={analyzeCommand}
-          disabled={isLoading || !inputCommand.trim()}
+          disabled={!canSubmit}
           className={`flex items-center justify-center px-6 py-3 rounded-lg font-bold transition-all duration-200 ${
-            isLoading || !inputCommand.trim()
+            !canSubmit
               ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
               : 'bg-teal-600 text-white hover:bg-teal-500 shadow-lg shadow-teal-500/20'
           }`}
@@ -115,11 +172,13 @@ export const CommandAnalyzer: React.FC = () => {
           {isLoading ? (
             <>
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
               Analyzing...
             </>
+          ) : cooldown > 0 ? (
+            `Wait ${cooldown}s…`
           ) : (
             <>
               <SearchIcon />
@@ -127,6 +186,7 @@ export const CommandAnalyzer: React.FC = () => {
             </>
           )}
         </button>
+        <p className="text-xs text-gray-600 text-center">Ctrl+Enter to analyze · {RATE_LIMIT_SECONDS}s cooldown between requests</p>
       </div>
 
       {error && (
@@ -149,11 +209,7 @@ export const CommandAnalyzer: React.FC = () => {
 
             <div className={`p-4 rounded-lg border flex items-center gap-4 ${analysis.isError ? 'bg-red-900/40 text-red-400 border-red-500/30' : 'bg-green-900/40 text-green-400 border-green-500/30'}`}>
               <div className="w-6 h-6 flex items-center justify-center">
-                 {analysis.isError ? (
-                   <span className="text-2xl font-black">!</span>
-                 ) : (
-                   <ShieldCheckIcon />
-                 )}
+                {analysis.isError ? <span className="text-2xl font-black">!</span> : <ShieldCheckIcon />}
               </div>
               <div>
                 <span className="text-xs uppercase font-black tracking-widest opacity-70">Status</span>
@@ -170,18 +226,14 @@ export const CommandAnalyzer: React.FC = () => {
               Explanation
             </h3>
             <div className="prose prose-invert max-w-none text-gray-300">
-              <p className="whitespace-pre-wrap leading-relaxed">
-                {analysis.explanation}
-              </p>
+              <p className="whitespace-pre-wrap leading-relaxed">{analysis.explanation}</p>
             </div>
           </div>
 
           {analysis.errorDetails && (
             <div className="bg-red-900/10 border border-red-900/30 rounded-lg p-6">
               <h3 className="text-lg font-bold text-red-400 mb-2">Technical Warning</h3>
-              <p className="text-gray-400 italic">
-                {analysis.errorDetails}
-              </p>
+              <p className="text-gray-400 italic">{analysis.errorDetails}</p>
             </div>
           )}
         </div>

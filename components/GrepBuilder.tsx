@@ -2,44 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { GeneratedCommand } from './GeneratedCommand';
 import { CommandEntry } from '../types';
 import { shellQuote as q } from '../utils/shell';
+import { LabeledInput, FlagCheckbox } from './shared';
 
 interface GrepBuilderProps {
     onCommandGenerated: (command: string, type: string) => void;
     favorites: CommandEntry[];
     onToggleFavorite: (command: string, type: string) => void;
 }
-
-const LabeledInput: React.FC<{ label: string; value: string; onChange: (val: string) => void; placeholder?: string; description?: string; }> = 
-({ label, value, onChange, placeholder, description }) => (
-    <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
-        <input
-            type="text"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="w-full bg-gray-900 border border-gray-600 rounded-md px-3 py-2 focus:ring-teal-500 focus:border-teal-500 font-mono text-sm"
-        />
-        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
-    </div>
-);
-
-const FlagCheckbox: React.FC<{ label: string; checked: boolean; onChange: (checked: boolean) => void; description: string; flag: string;}> =
-({ label, checked, onChange, description, flag }) => (
-    <div className="flex items-start gap-3">
-        <input 
-            type="checkbox"
-            id={`flag-${flag}`}
-            checked={checked}
-            onChange={e => onChange(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mt-1"
-        />
-        <div>
-            <label htmlFor={`flag-${flag}`} className="text-sm font-medium text-gray-300">{label} <span className="font-mono text-xs text-gray-500">({flag})</span></label>
-            <p className="text-xs text-gray-500">{description}</p>
-        </div>
-    </div>
-);
 
 export const GrepBuilder: React.FC<GrepBuilderProps> = ({ onCommandGenerated, favorites, onToggleFavorite }) => {
     const [pattern, setPattern] = useState('error');
@@ -99,12 +68,12 @@ export const GrepBuilder: React.FC<GrepBuilderProps> = ({ onCommandGenerated, fa
                 <div>
                     <h3 className="text-md font-semibold text-gray-300 mb-4">Options</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <FlagCheckbox label="Recursive" flag="-r" checked={isRecursive} onChange={setIsRecursive} description="Search directories and subdirectories." />
-                        <FlagCheckbox label="Case-Insensitive" flag="-i" checked={isCaseInsensitive} onChange={setIsCaseInsensitive} description="Ignore case distinctions in patterns." />
-                        <FlagCheckbox label="Invert Match" flag="-v" checked={invertMatch} onChange={setInvertMatch} description="Show lines that DO NOT match." />
-                        <FlagCheckbox label="Files with Matches" flag="-l" checked={showFileNames} onChange={setShowFileNames} description="Only show the names of matching files." />
-                        <FlagCheckbox label="Line Numbers" flag="-n" checked={showLineNumbers} onChange={setShowLineNumbers} description="Show line numbers with output." />
-                        <FlagCheckbox label="Whole Words" flag="-w" checked={matchWholeWords} onChange={setMatchWholeWords} description="The pattern must match a whole word." />
+                        <FlagCheckbox namespace="grep" label="Recursive" flag="-r" checked={isRecursive} onChange={setIsRecursive} description="Search directories and subdirectories." />
+                        <FlagCheckbox namespace="grep" label="Case-Insensitive" flag="-i" checked={isCaseInsensitive} onChange={setIsCaseInsensitive} description="Ignore case distinctions in patterns." />
+                        <FlagCheckbox namespace="grep" label="Invert Match" flag="-v" checked={invertMatch} onChange={setInvertMatch} description="Show lines that DO NOT match." />
+                        <FlagCheckbox namespace="grep" label="Files with Matches" flag="-l" checked={showFileNames} onChange={setShowFileNames} description="Only show the names of matching files." />
+                        <FlagCheckbox namespace="grep" label="Line Numbers" flag="-n" checked={showLineNumbers} onChange={setShowLineNumbers} description="Show line numbers with output." />
+                        <FlagCheckbox namespace="grep" label="Whole Words" flag="-w" checked={matchWholeWords} onChange={setMatchWholeWords} description="The pattern must match a whole word." />
                     </div>
                 </div>
             </div>

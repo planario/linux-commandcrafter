@@ -3,7 +3,7 @@ services:
     build:
       context: .
       args:
-        VITE_API_KEY: ${VITE_API_KEY:-}
+        VITE_GEMINI_API_KEY: ${VITE_GEMINI_API_KEY:-}
     container_name: linux-command-crafter
     ports:
       - "7256:80"
