@@ -64,7 +64,7 @@ fi
 echo -e "${GREEN}[3/5] Building application...${NC}"
 # Assume we are in the repo root
 npm install
-npm run build
+VITE_GEMINI_API_KEY="${VITE_GEMINI_API_KEY:-}" npm run build
 
 # Configure Nginx
 echo -e "${GREEN}[4/5] Configuring Nginx on port ${PORT}...${NC}"
