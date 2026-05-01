@@ -1,0 +1,44 @@
+{% if extra and extra.ssh_commands %}
+  {# Multi-command output for SSH manager #}
+  {% for label, cmd in [
+      ('1. Generate Key Pair', extra.ssh_commands.keygen),
+      ('2. Authorize Key (ssh-copy-id)', extra.ssh_commands.copy_id),
+      ('2b. Manual Pipe Fallback', extra.ssh_commands.manual_copy),
+      ('3. Toggle Password Auth', extra.ssh_commands.password_toggle),
+  ] %}
+    <div class="generated">
+      <div class="generated-label">{{ label }}</div>
+      <pre class="generated-pre"><code data-cmd="{{ cmd }}" data-type="ssh">{{ cmd }}</code></pre>
+      <div class="generated-actions">
+        <button type="button" class="btn btn-icon" data-action="copy" title="Copy">Copy</button>
+        <button type="button" class="btn btn-icon" data-action="favorite" title="Favorite">★</button>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="generated">
+    {% if error %}
+      <div class="alert alert-error"><strong>Error:</strong> {{ error }}</div>
+    {% endif %}
+    {% if extra and extra.validation %}
+      {% if extra.validation.dangerous %}
+        <div class="alert alert-warning">
+          <strong>Warning:</strong> The command matches a potentially destructive pattern.
+          Double-check before scheduling this cron job.
+        </div>
+      {% endif %}
+      {% if extra.validation.invalid %}
+        <div class="alert alert-caution">
+          One or more time fields contain invalid characters. Use digits, *, /, -, or ,
+        </div>
+      {% endif %}
+    {% endif %}
+    <pre class="generated-pre {% if spec and spec.multiline %}is-multiline{% endif %}"><code data-cmd="{{ generated }}" data-type="{{ spec.id if spec else '' }}">{{ generated or '— enter values to build a command —' }}</code></pre>
+    {% if generated %}
+      <div class="generated-actions">
+        <button type="button" class="btn btn-icon" data-action="copy" title="Copy">Copy</button>
+        <button type="button" class="btn btn-icon" data-action="favorite" title="Favorite">★</button>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

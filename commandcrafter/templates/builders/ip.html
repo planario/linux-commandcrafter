@@ -1,0 +1,47 @@
+<div class="grid-2">
+  <div class="field">
+    <label>Object</label>
+    <select name="mode">
+      <option value="addr"  {% if ctx.mode == 'addr'  %}selected{% endif %}>Address</option>
+      <option value="link"  {% if ctx.mode == 'link'  %}selected{% endif %}>Link</option>
+      <option value="route" {% if ctx.mode == 'route' %}selected{% endif %}>Route</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Subcommand</label>
+    <select name="subcommand">
+      <option value="show" {% if ctx.subcommand == 'show' %}selected{% endif %}>show</option>
+      <option value="add"  {% if ctx.subcommand == 'add'  %}selected{% endif %}>add</option>
+      <option value="del"  {% if ctx.subcommand == 'del'  %}selected{% endif %}>del</option>
+      <option value="set"  {% if ctx.subcommand == 'set'  %}selected{% endif %}>set</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Device</label>
+    <input type="text" name="device" value="{{ ctx.device }}" placeholder="eth0">
+  </div>
+  <div class="field">
+    <label>Address (CIDR)</label>
+    <input type="text" name="address" value="{{ ctx.address }}" placeholder="192.168.1.100/24">
+  </div>
+</div>
+<div class="grid-3">
+  <div class="field">
+    <label>Link state</label>
+    <select name="link_state">
+      <option value="up"   {% if ctx.link_state == 'up'   %}selected{% endif %}>up</option>
+      <option value="down" {% if ctx.link_state == 'down' %}selected{% endif %}>down</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Gateway</label>
+    <input type="text" name="gateway" value="{{ ctx.gateway }}" placeholder="192.168.1.1">
+  </div>
+  <div class="field">
+    <label>Route destination</label>
+    <input type="text" name="route_dest" value="{{ ctx.route_dest }}" placeholder="default">
+  </div>
+</div>

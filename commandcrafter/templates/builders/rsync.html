@@ -1,0 +1,36 @@
+<div class="grid-2">
+  <div class="field">
+    <label>Source</label>
+    <input type="text" name="source" value="{{ ctx.source }}" placeholder="/path/to/source/">
+  </div>
+  <div class="field">
+    <label>Destination</label>
+    <input type="text" name="destination" value="{{ ctx.destination }}" placeholder="user@remote:/path/">
+  </div>
+</div>
+
+<h3 class="subtitle">Authentication (SSH)</h3>
+<div class="grid-2">
+  <div class="field">
+    <label>Identity file</label>
+    <input type="text" name="identity" placeholder="~/.ssh/id_rsa">
+  </div>
+  <div class="field">
+    <label>SSH port</label>
+    <input type="text" name="ssh_port" placeholder="22">
+  </div>
+</div>
+
+<h3 class="subtitle">Sync options</h3>
+<div class="grid-3">
+  <label class="check-row"><input type="checkbox" name="archive"  {% if ctx.archive  %}checked{% endif %}> <span>Archive (<code>-a</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="verbose"  {% if ctx.verbose  %}checked{% endif %}> <span>Verbose (<code>-v</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="compress" {% if ctx.compress %}checked{% endif %}> <span>Compress (<code>-z</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="progress" {% if ctx.progress %}checked{% endif %}> <span>Progress</span></label>
+  <label class="check-row"><input type="checkbox" name="delete"> <span>--delete (caution)</span></label>
+  <label class="check-row"><input type="checkbox" name="dry_run"> <span>Dry run (<code>-n</code>)</span></label>
+</div>
+<div class="field">
+  <label>Exclude pattern</label>
+  <input type="text" name="exclude" value="{{ ctx.exclude }}" placeholder="node_modules">
+</div>

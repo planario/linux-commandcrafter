@@ -1,0 +1,43 @@
+<div class="field">
+  <label>File / Directory Path</label>
+  <input type="text" name="path" value="{{ ctx.path }}" placeholder="/path/to/target">
+</div>
+<label class="check-row"><input type="checkbox" name="recursive"> <span>Recursive (<code>-R</code>)</span></label>
+
+<div class="field">
+  <label>Mode</label>
+  <select name="mode" onchange="this.closest('section').dispatchEvent(new Event('builder-refresh'))">
+    <option value="symbolic" {% if ctx.mode == 'symbolic' %}selected{% endif %}>Symbolic</option>
+    <option value="octal"    {% if ctx.mode == 'octal'    %}selected{% endif %}>Octal</option>
+  </select>
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Octal value (used in octal mode)</label>
+    <input type="text" name="octal" maxlength="3" value="{{ ctx.octal }}" placeholder="755">
+  </div>
+  <div class="field">
+    <label>Action (used in symbolic mode)</label>
+    <select name="action">
+      <option value="+" {% if ctx.action == '+' %}selected{% endif %}>+ add</option>
+      <option value="-" {% if ctx.action == '-' %}selected{% endif %}>- remove</option>
+      <option value="=" {% if ctx.action == '=' %}selected{% endif %}>= set</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid-3">
+  <div>
+    <h4 class="kicker">Who</h4>
+    <label class="check-row"><input type="checkbox" name="who_user"   {% if ctx.who_user %}checked{% endif %}>   <span>User (u)</span></label>
+    <label class="check-row"><input type="checkbox" name="who_group"> <span>Group (g)</span></label>
+    <label class="check-row"><input type="checkbox" name="who_others"> <span>Others (o)</span></label>
+  </div>
+  <div>
+    <h4 class="kicker">Permissions</h4>
+    <label class="check-row"><input type="checkbox" name="perm_read"    {% if ctx.perm_read %}checked{% endif %}>    <span>Read (r)</span></label>
+    <label class="check-row"><input type="checkbox" name="perm_write">  <span>Write (w)</span></label>
+    <label class="check-row"><input type="checkbox" name="perm_execute" {% if ctx.perm_execute %}checked{% endif %}> <span>Execute (x)</span></label>
+  </div>
+</div>

@@ -1,0 +1,64 @@
+<section class="analyze" x-data="analyzer()">
+  <header class="builder-header">
+    <div>
+      <h2 class="title">Command Analyzer</h2>
+      <p class="muted">Paste a Linux command to get an explanation and safety check.</p>
+    </div>
+  </header>
+
+  {% if not analyzer_enabled %}
+    <div class="alert alert-warning">
+      <strong>Analyzer disabled.</strong> Set <code>GEMINI_API_KEY</code> in <code>.env</code> and restart to enable.
+    </div>
+  {% endif %}
+
+  <div class="field">
+    <label for="analyze-input">Command</label>
+    <textarea id="analyze-input"
+              x-model="command"
+              maxlength="2000"
+              placeholder="e.g., find . -name '*.log' -delete"
+              rows="3"
+              @keydown="onKey($event)"></textarea>
+    <div class="muted small">
+      <span x-text="command.length"></span>/2000 — Ctrl+Enter to analyze.
+    </div>
+  </div>
+
+  <button type="button"
+          class="btn btn-primary"
+          @click="analyze()"
+          :disabled="loading || !command.trim() || cooldown > 0 || !{{ 'true' if analyzer_enabled else 'false' }}">
+    <span x-show="!loading && cooldown === 0">Analyze Command</span>
+    <span x-show="loading">Analyzing…</span>
+    <span x-show="!loading && cooldown > 0">Wait <span x-text="cooldown"></span>s</span>
+  </button>
+
+  <template x-if="error">
+    <div class="alert alert-error" x-text="error"></div>
+  </template>
+
+  <template x-if="result">
+    <div class="analysis">
+      <div class="analysis-cards">
+        <div class="analysis-card" :class="safetyClass">
+          <div class="card-label">Safety</div>
+          <div class="card-value" x-text="result.safetyLevel"></div>
+        </div>
+        <div class="analysis-card" :class="result.isError ? 'is-dangerous' : 'is-safe'">
+          <div class="card-label">Status</div>
+          <div class="card-value" x-text="result.isError ? 'Error Detected' : 'Syntax Looks Valid'"></div>
+        </div>
+      </div>
+      <div class="analysis-explanation">
+        <h3>Explanation</h3>
+        <pre x-text="result.explanation"></pre>
+      </div>
+      <template x-if="result.errorDetails">
+        <div class="alert alert-error">
+          <strong>Technical:</strong> <span x-text="result.errorDetails"></span>
+        </div>
+      </template>
+    </div>
+  </template>
+</section>

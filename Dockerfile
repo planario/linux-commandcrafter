@@ -1,23 +1,29 @@
-# Stage 1: build
-FROM node:20-alpine AS builder
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PORT=7256
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-ARG VITE_GEMINI_API_KEY
-ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
+COPY commandcrafter ./commandcrafter
+COPY static ./static
+COPY pyproject.toml ./
 
-RUN npm run build
+RUN useradd --system --uid 1000 --home /app --shell /usr/sbin/nologin app \
+    && chown -R app:app /app
+USER app
 
-# Stage 2: serve
-FROM nginx:alpine
+EXPOSE 7256
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=5s \
+    CMD curl -fsS "http://127.0.0.1:${PORT}/healthz" || exit 1
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", "exec gunicorn --workers 2 --bind 0.0.0.0:${PORT} --access-logfile - 'commandcrafter:create_app()'"]

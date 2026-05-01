@@ -1,0 +1,16 @@
+<div class="builders" x-data="{ active: localStorage.getItem('lcc.activeBuilder') || '{{ initial_builder }}' }"
+     x-init="$watch('active', v => localStorage.setItem('lcc.activeBuilder', v));
+             htmx.ajax('GET', '/builder/' + active, '#builder-pane')">
+  <div class="tab-strip" role="tablist" aria-label="Command builders">
+    {% for b in builders %}
+      <button type="button" class="tab"
+              :class="{ 'is-active': active === '{{ b.id }}' }"
+              @click="active='{{ b.id }}'; htmx.ajax('GET', '/builder/{{ b.id }}', '#builder-pane')">
+        {{ b.id }}
+      </button>
+    {% endfor %}
+  </div>
+  <div id="builder-pane" class="builder-pane" hx-swap="innerHTML">
+    <p class="muted">Loading…</p>
+  </div>
+</div>

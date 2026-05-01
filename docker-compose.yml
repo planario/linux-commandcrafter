@@ -1,15 +1,16 @@
 services:
   commandcrafter:
-    build:
-      context: .
-      args:
-        VITE_GEMINI_API_KEY: ${VITE_GEMINI_API_KEY:-}
+    build: .
     container_name: linux-command-crafter
     ports:
-      - "7256:80"
+      - "7256:7256"
+    env_file:
+      - .env
+    environment:
+      PORT: "7256"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7256/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -1,0 +1,65 @@
+<section class="aliases" x-data="aliasView()">
+  <header class="builder-header">
+    <div>
+      <h2 class="title">Custom Aliases</h2>
+      <p class="muted">Create and manage your own command shortcuts. Stored in your browser.</p>
+    </div>
+  </header>
+
+  <form class="card-inner" @submit.prevent="save()">
+    <h3 class="subtitle" x-text="editingId ? 'Edit Alias' : 'Add New Alias'"></h3>
+    <div class="grid-2">
+      <div class="field">
+        <label>Alias Name</label>
+        <input type="text" x-model="form.name" placeholder="e.g., 'back'" required>
+      </div>
+      <div class="field">
+        <label>Description (optional)</label>
+        <input type="text" x-model="form.description" placeholder="Short description">
+      </div>
+    </div>
+    <div class="field">
+      <label>Full command</label>
+      <textarea x-model="form.command" placeholder="cd /var/www && ls -la" rows="3" required></textarea>
+    </div>
+    <label class="check-row">
+      <input type="checkbox" x-model="form.runInSubshell">
+      <span>Run in subshell — wraps command in <code>()</code> so <code>cd</code>/exports don't leak.</span>
+    </label>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" x-text="editingId ? 'Update Alias' : 'Save Alias'"></button>
+      <button type="button" class="btn btn-secondary" x-show="editingId" @click="resetForm()">Cancel</button>
+    </div>
+  </form>
+
+  <div class="alias-list">
+    <template x-if="aliases.length === 0">
+      <p class="muted center">You haven't saved any aliases yet.</p>
+    </template>
+    <template x-for="a in aliases" :key="a.id">
+      <article class="alias-item">
+        <header>
+          <div>
+            <strong x-text="a.name"></strong>
+            <span class="badge" x-show="a.runInSubshell">subshell</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-icon" @click="edit(a)">Edit</button>
+            <button class="btn btn-icon" @click="remove(a.id)">Delete</button>
+          </div>
+        </header>
+        <p class="muted" x-show="a.description" x-text="a.description"></p>
+        <div class="alias-output">
+          <div>
+            <span class="kicker">Shell definition</span>
+            <code x-text="aliasLine(a)"></code>
+          </div>
+          <div>
+            <span class="kicker">Permanent install (Bash)</span>
+            <code x-text="installLine(a)"></code>
+          </div>
+        </div>
+      </article>
+    </template>
+  </div>
+</section>

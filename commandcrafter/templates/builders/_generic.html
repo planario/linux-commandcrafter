@@ -1,0 +1,32 @@
+{% set definition = cmd %}
+<div class="grid-2">
+  {% for opt in definition.options %}
+    {% set canonical = opt.flag.split(',')[0].strip() %}
+    <label class="check-row">
+      <input type="checkbox" name="opt:{{ opt.name }}" value="on">
+      <span>
+        <strong>{{ opt.name }}</strong>
+        <code class="small">{{ canonical }}</code>
+        <p class="muted small">{{ opt.description }}</p>
+      </span>
+    </label>
+    {% if opt.type.value == 'value' %}
+      <input type="text" name="val:{{ opt.name }}" placeholder="{{ opt.placeholder }}" class="indent">
+    {% else %}
+      <span class="placeholder"></span>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% if definition.args %}
+  <h3 class="subtitle">Arguments</h3>
+  <div class="grid-2">
+    {% for arg in definition.args %}
+      <div class="field">
+        <label>{{ arg.name }}</label>
+        <input type="text" name="arg:{{ arg.name }}" placeholder="{{ arg.placeholder }}">
+        {% if arg.description %}<p class="muted small">{{ arg.description }}</p>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
