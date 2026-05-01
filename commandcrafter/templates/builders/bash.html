@@ -1,0 +1,62 @@
+<div x-data="bashEditor()" x-init="init()">
+  <div class="task-list">
+    <template x-for="(block, idx) in blocks" :key="block.id">
+      <div class="task" :class="'task-' + block.type">
+        <header>
+          <span class="badge" x-text="block.type"></span>
+          <div class="actions">
+            <button type="button" class="btn btn-icon" @click="moveBlock(idx, -1)" :disabled="idx === 0">↑</button>
+            <button type="button" class="btn btn-icon" @click="moveBlock(idx, 1)" :disabled="idx === blocks.length - 1">↓</button>
+            <button type="button" class="btn btn-icon" @click="removeBlock(idx)">×</button>
+          </div>
+        </header>
+
+        <template x-if="block.type === 'shebang'">
+          <input type="text" x-model="block.data.interpreter" placeholder="/bin/bash">
+        </template>
+        <template x-if="block.type === 'comment'">
+          <input type="text" x-model="block.data.text" placeholder="A note">
+        </template>
+        <template x-if="block.type === 'variable'">
+          <div class="grid-2">
+            <input type="text" x-model="block.data.name" placeholder="VAR_NAME">
+            <input type="text" x-model="block.data.value" placeholder='"value"'>
+          </div>
+        </template>
+        <template x-if="block.type === 'echo'">
+          <input type="text" x-model="block.data.text" placeholder='"Hello, $NAME"'>
+        </template>
+        <template x-if="block.type === 'read'">
+          <div class="grid-2">
+            <input type="text" x-model="block.data.prompt" placeholder="Prompt">
+            <input type="text" x-model="block.data.variable" placeholder="VAR">
+          </div>
+        </template>
+        <template x-if="block.type === 'command'">
+          <input type="text" x-model="block.data.command" placeholder="ls -la">
+        </template>
+        <template x-if="block.type === 'if'">
+          <div class="field">
+            <label>condition</label>
+            <input type="text" x-model="block.data.condition" placeholder='[ -f "file" ]'>
+            <p class="muted small">Add nested commands manually in the generated script for now.</p>
+          </div>
+        </template>
+        <template x-if="block.type === 'for'">
+          <div class="grid-2">
+            <input type="text" x-model="block.data.variable" placeholder="i">
+            <input type="text" x-model="block.data.list" placeholder="1 2 3">
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+
+  <div class="quick-row">
+    <template x-for="t in blockTypes" :key="t">
+      <button type="button" class="btn btn-secondary" @click="addBlock(t)">+ <span x-text="t"></span></button>
+    </template>
+  </div>
+
+  <input type="hidden" name="blocks" :value="JSON.stringify(blocks)">
+</div>

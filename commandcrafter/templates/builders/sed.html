@@ -1,0 +1,19 @@
+<div class="grid-2">
+  <div class="field">
+    <label>Search for</label>
+    <input type="text" name="search" value="{{ ctx.search }}" placeholder="Text or Regex">
+  </div>
+  <div class="field">
+    <label>Replace with</label>
+    <input type="text" name="replace" value="{{ ctx.replace }}" placeholder="Replacement">
+  </div>
+</div>
+<div class="field">
+  <label>File</label>
+  <input type="text" name="file" value="{{ ctx.file }}" placeholder="/home/user/logs/app.log">
+</div>
+<div class="grid-2">
+  <label class="check-row"><input type="checkbox" name="is_global" {% if ctx.is_global %}checked{% endif %}> <span>Global (<code>g</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="case_insensitive"> <span>Case-insensitive (<code>i</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="in_place"> <span>In-place (<code>-i</code>) — caution</span></label>
+</div>

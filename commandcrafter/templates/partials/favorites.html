@@ -1,0 +1,28 @@
+<section class="favorites" x-data="favoritesView()">
+  <header class="builder-header">
+    <div>
+      <h2 class="title">Favorite Commands</h2>
+      <p class="muted">Hand-picked commands. Click ★ on a generated command to add it.</p>
+    </div>
+  </header>
+
+  <template x-if="entries.length === 0">
+    <p class="muted center">You have no favorites yet.</p>
+  </template>
+
+  <div class="command-list">
+    <template x-for="entry in entries" :key="entry.id">
+      <article class="command-item">
+        <div class="meta">
+          <span class="badge" x-text="entry.type"></span>
+          <span class="muted small" x-text="formatTime(entry.timestamp)"></span>
+        </div>
+        <pre><code x-text="entry.command"></code></pre>
+        <div class="actions">
+          <button class="btn btn-icon" @click="remove(entry)">Unfavorite</button>
+          <button class="btn btn-icon" @click="copy(entry.command)">Copy</button>
+        </div>
+      </article>
+    </template>
+  </div>
+</section>

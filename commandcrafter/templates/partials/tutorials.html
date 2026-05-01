@@ -1,0 +1,36 @@
+<section class="tutorials" x-data="{ open: '{{ tutorials[0].name }}' }">
+  <header class="builder-header">
+    <div>
+      <h2 class="title">Command Tutorials</h2>
+      <p class="muted">Step-by-step guides for common Linux commands.</p>
+    </div>
+  </header>
+
+  {% for t in tutorials %}
+    <article class="tutorial">
+      <button type="button" class="tutorial-toggle"
+              :class="{ 'is-open': open === '{{ t.name }}' }"
+              @click="open = (open === '{{ t.name }}' ? null : '{{ t.name }}')">
+        <span>{{ t.title }}</span>
+        <span class="caret" :class="{ 'is-open': open === '{{ t.name }}' }">▾</span>
+      </button>
+      <div class="tutorial-body" x-show="open === '{{ t.name }}'" x-cloak>
+        {% for item in t.content %}
+          {% if item.type == 'heading' %}
+            <h4>{{ item.text }}</h4>
+          {% elif item.type == 'paragraph' %}
+            <p>{{ item.text }}</p>
+          {% elif item.type == 'code' %}
+            <pre><code>{{ item.text }}</code></pre>
+          {% elif item.type == 'tip' %}
+            <div class="callout callout-tip"><strong>TIP</strong> {{ item.text }}</div>
+          {% elif item.type == 'warning' %}
+            <div class="callout callout-warn"><strong>WARN</strong> {{ item.text }}</div>
+          {% elif item.type == 'note' %}
+            <div class="callout callout-note"><strong>NOTE</strong> {{ item.text }}</div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </article>
+  {% endfor %}
+</section>

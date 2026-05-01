@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block main %}
+  {% if active_view == 'builders' %}
+    {% include "partials/builders.html" %}
+  {% elif active_view == 'analyze' %}
+    {% include "partials/analyze.html" %}
+  {% elif active_view == 'ssh' %}
+    {% include "partials/ssh.html" %}
+  {% elif active_view == 'aliases' %}
+    {% include "partials/aliases.html" %}
+  {% elif active_view == 'tutorials' %}
+    {% include "partials/tutorials.html" %}
+  {% elif active_view == 'history' %}
+    {% include "partials/history.html" %}
+  {% elif active_view == 'favorites' %}
+    {% include "partials/favorites.html" %}
+  {% endif %}
+{% endblock %}

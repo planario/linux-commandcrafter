@@ -1,0 +1,17 @@
+<div class="grid-5">
+  {% for f in [('minute','Minute','(0–59)'), ('hour','Hour','(0–23)'),
+               ('dom','Day of Month','(1–31)'), ('month','Month','(1–12)'),
+               ('dow','Day of Week','(0–7)')] %}
+    <div class="field">
+      <label>{{ f[1] }}</label>
+      <input type="text" name="{{ f[0] }}" value="{{ ctx[f[0]] }}" placeholder="*">
+      <p class="muted small">{{ f[2] }}</p>
+    </div>
+  {% endfor %}
+</div>
+<p class="muted small">Use <code>*</code> for any value, <code>*/n</code> for every n, or <code>1,2,3</code> for a list.</p>
+
+<div class="field">
+  <label>Command</label>
+  <input type="text" name="command" maxlength="1000" value="{{ ctx.command }}" placeholder="/path/to/script.sh">
+</div>

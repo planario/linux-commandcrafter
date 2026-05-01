@@ -1,110 +1,123 @@
-# 🛠️ Linux CommandCrafter
+# Linux CommandCrafter
 
-A professional, dark-themed utility for visually constructing, analyzing, and managing complex Linux commands.
+A dark-themed Flask web app for visually constructing, analyzing, and managing
+Linux commands. 14 specialised builders, 4 generic flag/value commands, an
+AI-powered analyzer, browser-local history/favorites/aliases, and 19 in-app
+tutorials.
 
----
+This is the **Python rewrite** of the original React/Vite SPA. Server-rendered
+templates plus HTMX swaps eliminate the build step, runtime API-key handling,
+and the "blank-page" failure mode of the previous frontend.
 
-## 🚀 Deployment Options
-
-### 1. Docker (Recommended)
-The fastest way to get CommandCrafter running on any platform with Docker installed.
-
-```bash
-# Build and start
-docker-compose up -d
-```
-Access the app at `http://localhost:7256`.
-
----
-
-### 2. Automated Linux Script
-Deploy to a fresh server in seconds. This script handles OS detection, Node.js installation, Nginx configuration on port 7256, and security headers.
-
-**Supports:** Ubuntu, Debian, RHEL, CentOS, Fedora.
+## Quick start
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-repo/commandcrafter.git
-cd commandcrafter
-
-# Execute the deployment engine
-sudo chmod +x deploy.sh
-sudo ./deploy.sh
+git clone <this-repo>
+cd linux-commandcrafter
+cp .env.example .env             # set GEMINI_API_KEY if you want the analyzer
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m commandcrafter           # serves http://localhost:7256
 ```
 
----
+The default port is **7256**. Point a browser at `http://localhost:7256`.
 
-### 3. Manual Installation
+## Production deployment
 
-#### 📦 Phase A: System Dependencies
+### Docker (recommended)
 
-**For Debian / Ubuntu:**
 ```bash
-sudo apt update
-sudo apt install -y git curl nginx
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
+cp .env.example .env
+docker compose up -d --build
 ```
 
-**For RHEL / CentOS / Fedora:**
+### Bare-metal Linux (Debian/Ubuntu/RHEL/CentOS/Fedora)
+
 ```bash
-sudo dnf update -y
-sudo dnf install -y git curl nginx
-curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
-sudo dnf install -y nodejs
+sudo ./deploy.sh                 # installs python3, gunicorn, nginx (proxy)
+# To skip nginx and run gunicorn directly on :7256, pass --no-nginx
+sudo ./deploy.sh --no-nginx
 ```
 
-#### 🏗️ Phase B: Build & Serve
+`deploy.sh` installs the app to `/opt/commandcrafter`, writes a systemd unit,
+and (by default) sets up nginx as a reverse proxy on port 7256. Edit
+`/etc/commandcrafter.env` to change settings, then `systemctl restart
+commandcrafter`.
+
+## Configuration
+
+All settings come from environment variables, loaded once at startup
+(no rebuild required to rotate keys):
+
+| Variable                  | Default            | Purpose |
+|---------------------------|--------------------|---------|
+| `GEMINI_API_KEY`          | *(empty)*          | Enables the Command Analyzer. Get one at https://aistudio.google.com/app/apikey |
+| `GEMINI_MODEL`            | `gemini-2.0-flash` | Model used by the analyzer |
+| `HOST`                    | `0.0.0.0`          | Bind address for `python -m commandcrafter` |
+| `PORT`                    | `7256`             | Bind port |
+| `DEBUG`                   | `false`            | Set to `true` only in development |
+| `ANALYZE_COOLDOWN_SECONDS`| `10`               | Per-IP minimum interval between analyzer calls |
+
+When `GEMINI_API_KEY` is empty, the analyzer is disabled and the rest of the
+app continues to work normally — you'll see a one-line notice on the Analyze
+tab instead of a blank page.
+
+## Features
+
+- **14 specialised builders**: ansible-playbook, bash, chmod, crontab, ffmpeg,
+  find, git, grep, ip, lxc, rsync, scp, sed, ssh, ufw.
+- **4 generic builders**: mv, cp, tar, gzip.
+- **AI Analyzer** (Gemini): pastes a command, returns a JSON report with
+  `safetyLevel`, an `explanation`, and `errorDetails`.
+- **Tutorials**: 19 in-app guides covering every command above.
+- **History / Favorites / Aliases**: stored in browser `localStorage` under the
+  same keys as the original React app — your existing data is preserved.
+- **Live preview**: forms update the generated command via HTMX swaps as you
+  type (no page reload).
+
+## Project layout
+
+```
+commandcrafter/         Flask package
+  __init__.py           App factory
+  __main__.py           python -m commandcrafter
+  config.py             Env-var-driven config
+  routes.py             HTTP routes
+  shell.py              shell_quote helper
+  sanitize.py           cron / dangerous-command validators
+  analyzer.py           Server-side Gemini call
+  tutorials.py          Tutorial content
+  commands.py           Generic command definitions (mv/cp/tar/gzip)
+  builders/             One module per builder + registry
+  templates/            Jinja2 templates
+static/
+  css/app.css           Hand-rolled dark/teal theme (no Tailwind)
+  js/                   storage.js, ui.js, app.js (Alpine components)
+  vendor/               Optional self-hosted htmx + alpine
+tests/                  pytest suite
+```
+
+## Testing
+
 ```bash
-# Build the project
-npm install
-npm run build
-
-# Prepare the web directory
-sudo mkdir -p /var/www/commandcrafter
-sudo cp -r dist/* /var/www/commandcrafter/
-
-# Set Permissions
-# (For Debian/Ubuntu)
-sudo chown -R www-data:www-data /var/www/commandcrafter
-# (For RHEL/CentOS)
-sudo chown -R nginx:nginx /var/www/commandcrafter
+pip install -r requirements.txt
+pytest -v
 ```
 
-#### 🌐 Phase C: Nginx Configuration
-Create `/etc/nginx/sites-available/commandcrafter` (Debian) or `/etc/nginx/conf.d/commandcrafter.conf` (RHEL):
+The suite covers each builder's command-generation contract, the validation
+helpers, and HTTP smoke tests for every view and every `POST /build/<id>`.
 
-```nginx
-server {
-    listen 7256;
-    root /var/www/commandcrafter;
-    index index.html;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
+## Adding a new builder
 
----
+1. Create `commandcrafter/builders/<name>.py` exporting `build(form: dict) -> str`.
+2. Create `commandcrafter/templates/builders/<name>.html` for its form fields.
+3. Append a `BuilderSpec(...)` entry to `BUILTIN_SPECS` in
+   `commandcrafter/builders/__init__.py`.
+4. Add a fixture in `tests/test_builders.py`.
 
-## 🛡️ Security & Hardening
+No build step. Restart the server and the new tab appears.
 
-### Firewall
-Ensure port 7256 is open:
-- **UFW:** `sudo ufw allow 7256/tcp`
-- **Firewalld:** `sudo firewall-cmd --permanent --add-port=7256/tcp && sudo firewall-cmd --reload`
+## License
 
-### SELinux (RHEL Based)
-If you get a 403 Forbidden on RHEL, you may need to update the security context:
-```bash
-sudo chcon -Rt httpd_sys_content_t /var/www/commandcrafter
-```
-
----
-
-## 🧩 Features
-- **Visual Builders:** Cron, UFW, FFmpeg, Ansible, and more.
-- **AI Analyzer:** Explain any command using Gemini.
-- **Script Studio:** Build Bash scripts using visual logic blocks.
-- **SSH Manager:** Securely generate and distribute keys.
-- **Alias Forge:** Create permanent Bash aliases with one click.
+MIT.

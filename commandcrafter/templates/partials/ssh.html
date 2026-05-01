@@ -1,0 +1,9 @@
+{% if ssh_spec %}
+  {% set spec = ssh_spec %}
+  {% set ctx = {'key_filename': 'id_rsa_server', 'key_comment': 'user@email.com',
+                'remote_user': 'root', 'remote_host': 'your-server-ip',
+                'public_key_path': '~/.ssh/id_rsa.pub', 'allow_password': False} %}
+  {% include "partials/builder_pane.html" %}
+{% else %}
+  <p>SSH builder is not registered.</p>
+{% endif %}

@@ -1,0 +1,24 @@
+<section class="builder-section"
+         x-data="builderPane()"
+         x-init="bind('{{ spec.id }}')"
+         data-builder="{{ spec.id }}">
+  <header class="builder-header">
+    <div>
+      <h2 class="title">{{ spec.title }}</h2>
+      <p class="muted">{{ spec.description }}</p>
+    </div>
+    <button type="button" class="btn btn-secondary" @click="reset()">Clear All</button>
+  </header>
+
+  <form id="builder-form-{{ spec.id }}"
+        hx-post="{{ url_for('build', builder_id=spec.id) }}"
+        hx-target="#generated-{{ spec.id }}"
+        hx-swap="innerHTML"
+        hx-trigger="input changed delay:250ms from:closest section, change delay:50ms from:closest section, builder-refresh from:closest section">
+    {% include spec.template %}
+  </form>
+
+  <div id="generated-{{ spec.id }}" class="generated-wrap">
+    {% include "partials/generated.html" %}
+  </div>
+</section>

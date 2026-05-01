@@ -1,0 +1,33 @@
+<h3 class="subtitle">1. Generate RSA Key Pair</h3>
+<div class="grid-2">
+  <div class="field">
+    <label>Filename</label>
+    <input type="text" name="key_filename" value="{{ ctx.key_filename }}" placeholder="id_rsa_server">
+  </div>
+  <div class="field">
+    <label>Comment / email</label>
+    <input type="text" name="key_comment" value="{{ ctx.key_comment }}" placeholder="user@example.com">
+  </div>
+</div>
+
+<h3 class="subtitle">2. Authorize Public Key on Remote</h3>
+<div class="grid-3">
+  <div class="field">
+    <label>Remote user</label>
+    <input type="text" name="remote_user" value="{{ ctx.remote_user }}">
+  </div>
+  <div class="field">
+    <label>Remote host</label>
+    <input type="text" name="remote_host" value="{{ ctx.remote_host }}">
+  </div>
+  <div class="field">
+    <label>Local public key</label>
+    <input type="text" name="public_key_path" value="{{ ctx.public_key_path }}">
+  </div>
+</div>
+
+<h3 class="subtitle">3. Password Login</h3>
+<label class="check-row">
+  <input type="checkbox" name="allow_password" {% if ctx.allow_password %}checked{% endif %}>
+  <span>Allow password authentication (lower security)</span>
+</label>

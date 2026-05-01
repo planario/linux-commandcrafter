@@ -1,0 +1,45 @@
+<div x-data="ansibleEditor()" x-init="init()">
+  <div class="grid-2">
+    <div class="field">
+      <label>Playbook name</label>
+      <input type="text" x-model="playbookName" name="playbook_name" value="{{ ctx.playbook_name }}">
+    </div>
+    <div class="field">
+      <label>Target hosts</label>
+      <input type="text" x-model="hosts" name="hosts" value="{{ ctx.hosts }}" placeholder="all, webservers">
+    </div>
+  </div>
+  <label class="check-row">
+    <input type="checkbox" x-model="become" name="become" {% if ctx.become %}checked{% endif %}>
+    <span>Run with sudo (<code>become: true</code>)</span>
+  </label>
+
+  <h3 class="subtitle">Add task</h3>
+  <div class="quick-row">
+    <template x-for="preset in presetList" :key="preset.key">
+      <button type="button" class="btn btn-secondary" x-text="preset.label" @click="addTask(preset.key)"></button>
+    </template>
+  </div>
+
+  <div class="task-list">
+    <template x-for="(task, idx) in tasks" :key="task.id">
+      <div class="task">
+        <header>
+          <input type="text" x-model="task.name" placeholder="Task name">
+          <span class="badge" x-text="'ansible.builtin.' + task.module"></span>
+          <button type="button" class="btn btn-icon" @click="removeTask(idx)">×</button>
+        </header>
+        <div class="grid-2">
+          <template x-for="(value, key) in task.args" :key="key">
+            <div class="field">
+              <label x-text="key"></label>
+              <input type="text" :value="value" @input="task.args[key] = $event.target.value">
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <input type="hidden" name="tasks" :value="JSON.stringify(tasks)">
+</div>

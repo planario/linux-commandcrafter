@@ -1,0 +1,66 @@
+<div class="grid-2">
+  <div class="field">
+    <label>Mode</label>
+    <select name="mode">
+      <option value="convert"      {% if ctx.mode == 'convert'      %}selected{% endif %}>Convert video</option>
+      <option value="upscale"      {% if ctx.mode == 'upscale'      %}selected{% endif %}>Upscale video</option>
+      <option value="trim"         {% if ctx.mode == 'trim'         %}selected{% endif %}>Trim</option>
+      <option value="extractAudio" {% if ctx.mode == 'extractAudio' %}selected{% endif %}>Extract audio</option>
+      <option value="createGif"    {% if ctx.mode == 'createGif'    %}selected{% endif %}>Create GIF</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Hardware acceleration</label>
+    <select name="hwaccel">
+      <option value="none"          {% if ctx.hwaccel == 'none'          %}selected{% endif %}>None (CPU)</option>
+      <option value="cuda"          {% if ctx.hwaccel == 'cuda'          %}selected{% endif %}>NVIDIA CUDA</option>
+      <option value="qsv"           {% if ctx.hwaccel == 'qsv'           %}selected{% endif %}>Intel QSV</option>
+      <option value="vaapi"         {% if ctx.hwaccel == 'vaapi'         %}selected{% endif %}>VA-API</option>
+      <option value="videotoolbox"  {% if ctx.hwaccel == 'videotoolbox'  %}selected{% endif %}>VideoToolbox</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Input file</label>
+    <input type="text" name="input_file" value="{{ ctx.input_file }}">
+  </div>
+  <div class="field">
+    <label>Output file</label>
+    <input type="text" name="output_file" value="{{ ctx.output_file }}">
+  </div>
+</div>
+
+<div class="grid-3">
+  <div class="field">
+    <label>Video codec</label>
+    <input type="text" name="video_codec" value="{{ ctx.video_codec }}">
+  </div>
+  <div class="field">
+    <label>Audio codec</label>
+    <input type="text" name="audio_codec" value="{{ ctx.audio_codec }}">
+  </div>
+  <div class="field">
+    <label>Scale (upscale)</label>
+    <input type="text" name="scale" value="{{ ctx.scale }}">
+  </div>
+</div>
+
+<div class="grid-3">
+  <div class="field">
+    <label>Start time</label>
+    <input type="text" name="start_time" value="{{ ctx.start_time }}">
+  </div>
+  <div class="field">
+    <label>Duration (s)</label>
+    <input type="text" name="duration" value="{{ ctx.duration }}">
+  </div>
+  <div class="field">
+    <label>FPS / GIF width</label>
+    <div class="inline">
+      <input type="text" name="fps" value="{{ ctx.fps }}" placeholder="fps">
+      <input type="text" name="width" value="{{ ctx.width }}" placeholder="width">
+    </div>
+  </div>
+</div>

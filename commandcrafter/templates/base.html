@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linux CommandCrafter</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <!-- htmx 1.9.12 and Alpine 3.14.1 — load from CDN by default. To self-host,
+       place the files at static/vendor/{htmx.min.js,alpine.min.js} and the app
+       will prefer them automatically (see static/js/app.js bootstrap). -->
+  <script defer src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"
+          crossorigin="anonymous"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"
+          crossorigin="anonymous"></script>
+  <script defer src="{{ url_for('static', filename='js/storage.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Linux Command<span class="hero-accent">Crafter</span></h1>
+      <p>Visually build, learn, and manage your Linux commands.</p>
+    </header>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      {% for v in views %}
+        <a class="nav-btn {% if v == active_view %}is-active{% endif %}"
+           href="{{ url_for('view', name=v) }}">{{ v|capitalize }}</a>
+      {% endfor %}
+    </nav>
+
+    <main class="card">
+      {% block main %}{% endblock %}
+    </main>
+
+    <footer class="footer">Built with Flask + HTMX for reliable command-line crafting.</footer>
+  </div>
+</body>
+</html>

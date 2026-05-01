@@ -1,0 +1,72 @@
+<div class="field">
+  <label>Subcommand</label>
+  <select name="subcommand" onchange="this.closest('section').dispatchEvent(new Event('builder-refresh'))">
+    {% for s in ['clone','add','commit','push','pull','branch','checkout'] %}
+      <option value="{{ s }}" {% if ctx.subcommand == s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Repository URL (clone)</label>
+    <input type="text" name="clone_repo" value="{{ ctx.clone_repo }}" placeholder="https://github.com/user/repo.git">
+  </div>
+  <div class="field">
+    <label>Target dir (clone)</label>
+    <input type="text" name="clone_dir" placeholder="my-app">
+  </div>
+</div>
+<div class="field">
+  <label>API token (for private HTTPS clone)</label>
+  <input type="password" name="api_key" placeholder="ghp_…">
+</div>
+
+<div class="field">
+  <label>Pathspec (add)</label>
+  <input type="text" name="add_path" value="{{ ctx.add_path }}" placeholder=".">
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Commit message</label>
+    <input type="text" name="commit_msg" placeholder="Brief summary">
+  </div>
+  <label class="check-row"><input type="checkbox" name="commit_amend"> <span>--amend last commit</span></label>
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Push remote</label>
+    <input type="text" name="push_remote" value="{{ ctx.push_remote }}">
+  </div>
+  <div class="field">
+    <label>Push branch</label>
+    <input type="text" name="push_branch" value="{{ ctx.push_branch }}">
+  </div>
+</div>
+<label class="check-row"><input type="checkbox" name="push_force"> <span>--force (caution)</span></label>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Pull remote</label>
+    <input type="text" name="pull_remote" value="{{ ctx.pull_remote }}">
+  </div>
+  <div class="field">
+    <label>Pull branch</label>
+    <input type="text" name="pull_branch" value="{{ ctx.pull_branch }}">
+  </div>
+</div>
+
+<div class="field">
+  <label>Branch name (branch)</label>
+  <input type="text" name="branch_name" placeholder="leave blank to list">
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Checkout target</label>
+    <input type="text" name="checkout_name" value="{{ ctx.checkout_name }}">
+  </div>
+  <label class="check-row"><input type="checkbox" name="checkout_new"> <span>-b create new branch</span></label>
+</div>

@@ -1,0 +1,32 @@
+<div class="grid-2">
+  <div class="field">
+    <label>Source</label>
+    <input type="text" name="source" value="{{ ctx.source }}">
+  </div>
+  <div class="field">
+    <label>Destination</label>
+    <input type="text" name="destination" value="{{ ctx.destination }}">
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="field">
+    <label>Identity file</label>
+    <input type="text" name="identity" placeholder="~/.ssh/id_rsa">
+  </div>
+  <div class="field">
+    <label>Auth token (env-var prefix)</label>
+    <input type="password" name="auth_token" placeholder="paste token">
+  </div>
+</div>
+
+<div class="grid-3">
+  <label class="check-row"><input type="checkbox" name="recursive"> <span>Recursive (<code>-r</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="preserve">  <span>Preserve (<code>-p</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="compress" {% if ctx.compress %}checked{% endif %}> <span>Compress (<code>-C</code>)</span></label>
+  <label class="check-row"><input type="checkbox" name="verbose"> <span>Verbose (<code>-v</code>)</span></label>
+</div>
+<div class="field">
+  <label>SSH port</label>
+  <input type="text" name="port" placeholder="22">
+</div>

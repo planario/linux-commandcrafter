@@ -1,0 +1,52 @@
+<h3 class="subtitle">Quick Actions</h3>
+<div class="quick-row">
+  {% for q in ['ufw status', 'ufw enable', 'ufw disable', 'ufw default deny incoming', 'ufw default allow outgoing'] %}
+    <button type="button" class="btn btn-secondary"
+            onclick="const f=this.closest('form'); const i=f.querySelector('[name=quick]'); i.value='{{ q }}'; f.dispatchEvent(new Event('input', {bubbles:true}));">
+      {{ q }}
+    </button>
+  {% endfor %}
+</div>
+<input type="hidden" name="quick" value="">
+
+<h3 class="subtitle">Build a Rule</h3>
+<div class="grid-2">
+  <div class="field">
+    <label>Action</label>
+    <select name="action">
+      {% for a in ['allow','deny','reject','limit'] %}
+        <option value="{{ a }}" {% if ctx.action == a %}selected{% endif %}>{{ a }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>Direction</label>
+    <select name="direction">
+      <option value="in"   {% if ctx.direction == 'in'   %}selected{% endif %}>in</option>
+      <option value="out"  {% if ctx.direction == 'out'  %}selected{% endif %}>out</option>
+      <option value="none" {% if ctx.direction == 'none' %}selected{% endif %}>any</option>
+    </select>
+  </div>
+</div>
+<div class="grid-3">
+  <div class="field">
+    <label>Protocol</label>
+    <select name="protocol">
+      <option value="tcp"  {% if ctx.protocol == 'tcp'  %}selected{% endif %}>TCP</option>
+      <option value="udp"  {% if ctx.protocol == 'udp'  %}selected{% endif %}>UDP</option>
+      <option value="none" {% if ctx.protocol == 'none' %}selected{% endif %}>any</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Port / service</label>
+    <input type="text" name="port" value="{{ ctx.port }}" placeholder="22 or http">
+  </div>
+  <div class="field">
+    <label>From IP</label>
+    <input type="text" name="from_ip" placeholder="any or 192.168.1.100">
+  </div>
+</div>
+<div class="field">
+  <label>To IP</label>
+  <input type="text" name="to_ip" placeholder="any">
+</div>
